@@ -1,0 +1,14 @@
+# Aktifkan rewrite engine
+RewriteEngine On
+
+# Abaikan folder assets, uploads, dan images
+RewriteCond %{REQUEST_URI} !^/assets/
+RewriteCond %{REQUEST_URI} !^/uploads/
+RewriteCond %{REQUEST_URI} !^/images/
+
+# Jika file/folder ada, jangan rewrite
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Arahkan semua request lain ke index.php
+RewriteRule ^(.*)$ index.php?url=$1 [L,QSA]

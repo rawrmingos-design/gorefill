@@ -1,0 +1,36 @@
+# ============================================
+# GoRefill - Public .htaccess (Simple & Safe)
+# ============================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /gorefill/public/
+
+    # Jika file atau folder tidak ditemukan, arahkan ke index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Nonaktifkan directory listing
+Options -Indexes
+
+# File default
+DirectoryIndex index.php
+
+# Header keamanan dasar
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Cache sederhana untuk aset
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+</IfModule>

@@ -1,0 +1,64 @@
+# GoRefill .gitignore
+
+# Vendor directory (Composer)
+/vendor/
+
+# Configuration files with sensitive data
+/config/mail.php
+/config/midtrans.php
+.env
+
+# Logs
+/logs/*.log
+/logs/*.txt
+
+# Uploads
+!/uploads/*
+!/uploads/.gitkeep
+!/uploads/products/.gitkeep
+
+# IDE specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Test files (remove after testing)
+test_connection.php
+test_*.php
+
+# .htaccess backups
+*.htaccess.backup
+.htaccess.bak
+
+# Cache
+/cache/*
+!/cache/.gitkeep
+
+# Node modules (if using npm later)
+/node_modules/
+
+# Composer lock file (optional, keep if want consistent dependencies)
+# composer.lock
+*.md
+!README.md
+
+/.windsurf/mcp.yaml
+
+*.sql
+!/migrations/egymarke_gorefill.sql

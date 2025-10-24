@@ -1,0 +1,21 @@
+{
+    "name": "gorefill/ecommerce",
+    "description": "GoRefill E-Commerce Platform - Eco-Friendly Refill Products",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "midtrans/midtrans-php": "^2.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
