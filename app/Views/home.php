@@ -6,65 +6,30 @@
     <title><?php echo e($config['app']['name']); ?> - Layanan Isi Ulang Terpercaya</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
     <!-- Header/Navbar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="?route=home" class="text-2xl font-bold text-blue-600">
-                        🌊 GoRefill
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="?route=products" class="text-blue-600 font-semibold">Products</a>
-                    <a href="?route=cart" class="text-gray-700 hover:text-blue-600">
-                        🛒 Cart <span id="cart-badge" class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">0</span>
-                    </a>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <a href="?route=admin.dashboard" class="text-purple-600 hover:text-purple-800 font-semibold flex items-center">
-                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                Admin Panel
-                            </a>
-                        <?php endif; ?>
-                        <a href="?route=profile" class="text-gray-700 hover:text-blue-600 flex items-center">
-                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            <?php echo e($_SESSION['name']); ?>
-                        </a>
-                        <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</a>
-                    <?php else: ?>
-                        <a href="?route=auth.login" class="text-blue-600 hover:text-blue-800">Login</a>
-                        <a href="?route=auth.register" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Register</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php include __DIR__ . '/layouts/navbar.php'; ?>
+    
 
     <!-- Hero Section -->
     <div class="relative bg-gradient-to-r from-blue-600 to-indigo-700 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <div class="text-center animate__animated animate__fadeIn">
                 <h1 class="text-5xl md:text-6xl font-bold text-white mb-6">
-                    Selamat Datang di GoRefill
+                    <i class="fas fa-recycle mr-4"></i>Selamat Datang di GoRefill
                 </h1>
                 <p class="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-                    Layanan Isi Ulang Air, LPG & Kebutuhan Rumah Tangga Terpercaya
+                    Layanan Isi Ulang <strong>Air Minum</strong>, <strong>Gas LPG</strong> & <strong>Kebutuhan Rumah Tangga</strong> Terpercaya
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="?route=products" class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-bold text-lg transition">
-                        🛒 Shop Now
+                    <a href="?route=products" class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <i class="fas fa-shopping-cart mr-2"></i> Belanja Sekarang
                     </a>
-                    <a href="#features" class="bg-blue-500 hover:bg-blue-400 text-white px-8 py-4 rounded-lg font-bold text-lg transition">
-                        Learn More
+                    <a href="#products" class="bg-blue-500 hover:bg-blue-400 text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <i class="fas fa-box mr-2"></i> Lihat Produk
                     </a>
                 </div>
             </div>
@@ -80,65 +45,111 @@
     <!-- Features Section -->
     <div id="features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-gray-800 mb-4">Why Choose GoRefill?</h2>
+            <h2 class="text-4xl font-bold text-gray-800 mb-4"><i class="fas fa-star text-yellow-500 mr-2"></i>Mengapa Pilih GoRefill?</h2>
             <p class="text-xl text-gray-600">Kemudahan dan kualitas terbaik untuk kebutuhan rumah tangga Anda</p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition">
-                <div class="text-5xl mb-4">💧</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Air Berkualitas</h3>
-                <p class="text-gray-600">Air minum higienis dan terjamin kualitasnya</p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-droplet text-4xl text-blue-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Air Berkualitas</h3>
+                <p class="text-sm text-gray-600">Air minum higienis dan terjamin kualitasnya</p>
             </div>
             
-            <div class="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition">
-                <div class="text-5xl mb-4">🚚</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Pengiriman Cepat</h3>
-                <p class="text-gray-600">Layanan antar langsung ke rumah Anda</p>
+            <div class="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-truck-fast text-4xl text-green-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Pengiriman Cepat</h3>
+                <p class="text-sm text-gray-600">Layanan antar langsung ke rumah Anda</p>
             </div>
             
-            <div class="text-center p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition">
-                <div class="text-5xl mb-4">💰</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Harga Terjangkau</h3>
-                <p class="text-gray-600">Harga kompetitif dengan kualitas terbaik</p>
+            <div class="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-20 h-20 mx-auto mb-4 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-hand-holding-dollar text-4xl text-yellow-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Harga Terjangkau</h3>
+                <p class="text-sm text-gray-600">Harga kompetitif dengan kualitas terbaik</p>
+            </div>
+            
+            <div class="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-shield-halved text-4xl text-purple-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Aman & Terpercaya</h3>
+                <p class="text-sm text-gray-600">Produk resmi dengan jaminan kualitas</p>
             </div>
         </div>
     </div>
 
-    <!-- Categories Section -->
-    <div class="bg-white py-16">
+    <!-- Featured Products Section -->
+    <div id="products" class="bg-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold text-gray-800 mb-4">Product Categories</h2>
-                <p class="text-xl text-gray-600">Temukan berbagai produk kebutuhan rumah tangga</p>
+                <h2 class="text-4xl font-bold text-gray-800 mb-4"><i class="fas fa-fire text-orange-500 mr-2"></i>Produk Terlaris</h2>
+                <p class="text-xl text-gray-600">Produk pilihan yang paling diminati pelanggan</p>
+            </div>
+            
+            <?php if (!empty($featuredProducts)): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <?php foreach (array_slice($featuredProducts, 0, 4) as $product): ?>
+                    <div class="bg-white rounded-xl shadow-md hover:shadow-2xl transition transform hover:-translate-y-2 overflow-hidden">
+                        <a href="?route=product.detail&id=<?php echo e($product['id']); ?>" class="block relative group">
+                            <?php
+                            require_once __DIR__ . '/../Helpers/ImageHelper.php';
+                            $imageUrl = ImageHelper::getImageUrl($product['image']);
+                            if ($imageUrl): ?>
+                                <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($product['name']); ?>" class="w-full h-56 object-cover group-hover:scale-105 transition duration-300">
+                            <?php else: ?>
+                                <div class="w-full h-56 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                                    <i class="fas fa-box text-6xl text-blue-400"></i>
+                                </div>
+                            <?php endif; ?>
+                        </a>
+                        <div class="p-4">
+                            <h3 class="font-bold text-gray-800 mb-2 line-clamp-2 min-h-[3rem]"><?php echo e($product['name']); ?></h3>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xl font-bold text-blue-600">Rp <?php echo number_format($product['price'], 0, ',', '.'); ?></span>
+                                <span class="text-sm text-gray-500"><i class="fas fa-box mr-1"></i><?php echo e($product['stock']); ?></span>
+                            </div>
+                            <button onclick="addToCart(<?php echo e($product['id']); ?>)" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 rounded-lg font-semibold transition">
+                                <i class="fas fa-shopping-cart mr-2"></i>Tambah
+                            </button>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+            
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4"><i class="fas fa-th-large mr-2"></i>Kategori Produk</h2>
+                <p class="text-lg text-gray-600">Temukan berbagai produk kebutuhan rumah tangga</p>
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <a href="?route=products&category=Air%20Minum" class="group">
-                    <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg p-8 text-center hover:shadow-lg transition">
-                        <div class="text-6xl mb-4">💧</div>
-                        <h3 class="font-bold text-gray-800 group-hover:text-blue-600">Air Minum</h3>
-                    </div>
-                </a>
-                
-                <a href="?route=products&category=Gas%20LPG" class="group">
-                    <div class="bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg p-8 text-center hover:shadow-lg transition">
-                        <div class="text-6xl mb-4">🔥</div>
-                        <h3 class="font-bold text-gray-800 group-hover:text-orange-600">Gas LPG</h3>
-                    </div>
-                </a>
-                
-                <a href="?route=products&category=Rumah%20Tangga" class="group">
-                    <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-lg p-8 text-center hover:shadow-lg transition">
-                        <div class="text-6xl mb-4">🧼</div>
-                        <h3 class="font-bold text-gray-800 group-hover:text-green-600">Rumah Tangga</h3>
-                    </div>
-                </a>
+                <?php if (!empty($categories)): ?>
+                    <?php foreach ($categories as $cat): ?>
+                        <a href="?route=products&category=<?php echo e($cat['id']); ?>" class="group">
+                            <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl p-8 text-center hover:shadow-xl transition transform hover:-translate-y-2">
+                                <div class="text-5xl mb-4">
+                                    <?php 
+                                    $icons = ['droplet', 'fire-burner', 'spray-can-sparkles', 'bottle-droplet', 'oil-can'];
+                                    $icon = $icons[($cat['id'] - 1) % count($icons)];
+                                    ?>
+                                    <i class="fas fa-<?php echo $icon; ?> text-blue-600"></i>
+                                </div>
+                                <h3 class="font-bold text-gray-800 group-hover:text-blue-700 text-lg"><?php echo e($cat['name']); ?></h3>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                <?php endif; ?>
                 
                 <a href="?route=products" class="group">
-                    <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-8 text-center hover:shadow-lg transition">
-                        <div class="text-6xl mb-4">🛒</div>
-                        <h3 class="font-bold text-gray-800 group-hover:text-purple-600">Lihat Semua</h3>
+                    <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl p-8 text-center hover:shadow-xl transition transform hover:-translate-y-2">
+                        <div class="text-5xl mb-4"><i class="fas fa-grip text-purple-600"></i></div>
+                        <h3 class="font-bold text-gray-800 group-hover:text-purple-700 text-lg">Lihat Semua</h3>
                     </div>
                 </a>
             </div>

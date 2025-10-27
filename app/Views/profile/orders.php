@@ -6,51 +6,20 @@
     <title><?= htmlspecialchars($title) ?> - GoRefill</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<?php 
+    <?php 
     // Load Midtrans config for client key
     $midtransConfig = require __DIR__ . '/../../../config/midtrans.php';
     $snapUrl = $midtransConfig['is_production'] ? $midtransConfig['snap_url']['production'] : $midtransConfig['snap_url']['sandbox'];
     ?>
     <!-- Midtrans Snap.js -->
     <script src="<?= $snapUrl ?>" data-client-key="<?= $midtransConfig['client_key'] ?>"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-50">
 
    <!-- Navbar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="?route=home" class="text-2xl font-bold text-blue-600">
-                        🌊 GoRefill
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="?route=products" class="text-gray-700 hover:text-blue-600">Products</a>
-                    <a href="?route=cart" class="text-gray-700 hover:text-blue-600">
-                        🛒 Cart <span class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">0</span>
-                    </a>
-                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                        <a href="?route=admin.dashboard" class="text-purple-600 hover:text-purple-800 font-semibold flex items-center">
-                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Admin Panel
-                        </a>
-                    <?php endif; ?>
-                    <a href="?route=profile" class="text-blue-600 font-semibold flex items-center">
-                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                        <?php echo e($_SESSION['name']); ?>
-                    </a>
-                    <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+    <?php include __DIR__ . '/../layouts/navbar.php'; ?>
+    
     <!-- Orders List -->
     <div class="max-w-6xl mx-auto px-4 py-8">
         <!-- Back Button -->
@@ -148,6 +117,12 @@
                                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
                                         <i class="fas fa-credit-card"></i> Bayar Sekarang
                                     </button>
+                                <?php endif; ?>
+                                <?php if ($order['status'] === 'shipped'): ?>
+                                    <a href="index.php?route=order.track&id=<?= urlencode($order['order_number']) ?>" 
+                                       class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                                        <i class="fas fa-map-marker-alt"></i> Track Order
+                                    </a>
                                 <?php endif; ?>
                                 <a href="?route=profile.orderDetail&order_number=<?= urlencode($order['order_number']) ?>" 
                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">

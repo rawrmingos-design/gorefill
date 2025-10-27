@@ -30,8 +30,9 @@ try {
     switch ($route) {
         // ==================== HOME ROUTES ====================
         case 'home':
-            // Homepage placeholder (will be product listing later)
-            require_once __DIR__ . '/../app/Views/home.php';
+            require_once __DIR__ . '/../app/Controllers/HomeController.php';
+            $homeController = new HomeController();
+            $homeController->index();
             break;
             
         // ==================== AUTH ROUTES ====================
@@ -264,6 +265,26 @@ try {
             $profileController->edit();
             break;
             
+        // ==================== ORDER ROUTES ====================
+        case 'order.index':
+        case 'order.list':
+            require_once __DIR__ . '/../app/Controllers/OrderController.php';
+            $orderController = new OrderController($pdo);
+            $orderController->index();
+            break;
+            
+        case 'order.track':
+            require_once __DIR__ . '/../app/Controllers/OrderController.php';
+            $orderController = new OrderController($pdo);
+            $orderController->track();
+            break;
+            
+        case 'order.show':
+            require_once __DIR__ . '/../app/Controllers/OrderController.php';
+            $orderController = new OrderController($pdo);
+            $orderController->show();
+            break;
+            
         // ==================== ADMIN ROUTES ====================
         case 'admin':
         case 'admin.dashboard':
@@ -302,6 +323,81 @@ try {
             require_once __DIR__ . '/../app/Controllers/AdminController.php';
             $adminController = new AdminController();
             $adminController->deleteProduct();
+            break;
+            
+        // ==================== ADMIN CATEGORY ROUTES ====================
+        case 'admin.categories':
+            require_once __DIR__ . '/../app/Controllers/AdminCategoryController.php';
+            $categoryController = new AdminCategoryController();
+            $categoryController->index();
+            break;
+            
+        case 'admin.categories.create':
+            require_once __DIR__ . '/../app/Controllers/AdminCategoryController.php';
+            $categoryController = new AdminCategoryController();
+            $categoryController->create();
+            break;
+            
+        case 'admin.categories.store':
+            require_once __DIR__ . '/../app/Controllers/AdminCategoryController.php';
+            $categoryController = new AdminCategoryController();
+            $categoryController->store();
+            break;
+            
+        case 'admin.categories.edit':
+            require_once __DIR__ . '/../app/Controllers/AdminCategoryController.php';
+            $categoryController = new AdminCategoryController();
+            $categoryController->edit();
+            break;
+            
+        case 'admin.categories.update':
+            require_once __DIR__ . '/../app/Controllers/AdminCategoryController.php';
+            $categoryController = new AdminCategoryController();
+            $categoryController->update();
+            break;
+            
+        case 'admin.categories.destroy':
+            require_once __DIR__ . '/../app/Controllers/AdminCategoryController.php';
+            $categoryController = new AdminCategoryController();
+            $categoryController->destroy();
+            break;
+            
+        // ==================== COURIER ROUTES ====================
+        case 'courier':
+        case 'courier.dashboard':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->index();
+            break;
+            
+        case 'courier.updateLocation':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->updateLocation();
+            break;
+            
+        case 'courier.getMyLocation':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->getMyLocation();
+            break;
+            
+        case 'courier.getLocation':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->getLocation();
+            break;
+            
+        case 'courier.startDelivery':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->startDelivery();
+            break;
+            
+        case 'courier.completeDelivery':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->completeDelivery();
             break;
             
         // ==================== TESTING ROUTE ====================

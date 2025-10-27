@@ -4,25 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo e($title ?? 'Admin Dashboard'); ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-100">
-    <!-- Navbar -->
-    <nav class="bg-purple-600 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-2xl font-bold">🔧 GoRefill Admin</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="?route=home" class="hover:text-purple-200">View Site</a>
-                    <a href="?route=profile" class="hover:text-purple-200">👤 <?php echo e($_SESSION['name']); ?></a>
-                    <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+
+    <?php include __DIR__ . '/partials/navbar.php'; ?>
 
     <!-- Content -->
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -136,7 +124,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"><?php echo e($product['category']); ?></span>
+                                        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"><?php echo e($product['category_name']); ?></span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">Rp <?php echo number_format($product['price'], 0, ',', '.'); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap">

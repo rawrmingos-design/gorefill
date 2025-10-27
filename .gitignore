@@ -55,10 +55,3 @@ test_*.php
 
 # Composer lock file (optional, keep if want consistent dependencies)
 # composer.lock
-*.md
-!README.md
-
-/.windsurf/mcp.yaml
-
-*.sql
-!/migrations/egymarke_gorefill.sql

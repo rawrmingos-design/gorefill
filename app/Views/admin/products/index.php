@@ -6,37 +6,32 @@
     <title><?php echo e($title); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
 <?php require_once __DIR__ . '/../../../Helpers/ImageHelper.php'; ?>
-    <!-- Navbar -->
-    <nav class="bg-purple-600 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center space-x-6">
-                    <h1 class="text-2xl font-bold">🔧 GoRefill Admin</h1>
-                    <a href="?route=admin.dashboard" class="hover:text-purple-200">Dashboard</a>
-                    <a href="?route=admin.products" class="text-purple-200 font-semibold">Products</a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="?route=home" class="hover:text-purple-200">View Site</a>
-                    <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php $currentRoute = 'admin.products'; ?>
+    <?php include __DIR__ . '/../partials/navbar.php'; ?>
 
     <!-- Content -->
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="mb-6 flex justify-between items-center">
+        <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div>
                 <h2 class="text-3xl font-bold text-gray-800">Manage Products</h2>
                 <p class="text-gray-600">Total: <?php echo e($totalProducts); ?> products</p>
             </div>
-            <a href="?route=admin.products.create" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg">
-                ➕ Add Product
-            </a>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <!-- Search Form -->
+                <form method="GET" action="" class="flex items-center bg-white border rounded-lg overflow-hidden shadow-sm">
+                    <input type="hidden" name="route" value="admin.products">
+                    <input type="text" name="search" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>" placeholder="Search product..." class="px-4 py-2 outline-none w-48 sm:w-64">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700"><i class="fas fa-search"></i></button>
+                </form>
+                <a href="?route=admin.products.create" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg text-center">
+                    ➕ Add Product
+                </a>
+            </div>
         </div>
 
         <!-- Flash Messages -->
@@ -61,30 +56,8 @@
                     <table class="min-w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    <a href="?route=admin.products&sort=no&order=<?php echo (isset($_GET['sort']) && $_GET['sort'] === 'no' && (!isset($_GET['order']) || $_GET['order'] === 'asc')) ? 'desc' : 'asc'; ?>" class="flex items-center hover:text-gray-700">
-                                        No
-                                        <?php if (isset($_GET['sort']) && $_GET['sort'] === 'no'): ?>
-                                            <?php if (!isset($_GET['order']) || $_GET['order'] === 'asc'): ?>
-                                                <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"/></svg>
-                                            <?php else: ?>
-                                                <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"/></svg>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </a>
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    <a href="?route=admin.products&sort=name&order=<?php echo (isset($_GET['sort']) && $_GET['sort'] === 'name' && (!isset($_GET['order']) || $_GET['order'] === 'asc')) ? 'desc' : 'asc'; ?>" class="flex items-center hover:text-gray-700">
-                                        Product
-                                        <?php if (isset($_GET['sort']) && $_GET['sort'] === 'name'): ?>
-                                            <?php if (!isset($_GET['order']) || $_GET['order'] === 'asc'): ?>
-                                                <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"/></svg>
-                                            <?php else: ?>
-                                                <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"/></svg>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </a>
-                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
@@ -103,10 +76,7 @@
                                             <?php
                                             $adminImageUrl = ImageHelper::getImageUrl($product['image']);
                                             if ($adminImageUrl): ?>
-                                                <img src="<?php echo e($adminImageUrl); ?>" 
-                                                     alt="<?php echo e($product['name']); ?>" 
-                                                     class="w-12 h-12 rounded object-cover mr-3"
-                                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-12 h-12 bg-gray-200 rounded flex items-center justify-center mr-3\'><span class=\'text-gray-400 text-xl\'>📦</span></div><div><div class=\'font-medium text-gray-900\'><?php echo e($product['name']); ?></div><?php if ($product['description']): ?><div class=\'text-sm text-gray-500\'><?php echo e(substr($product['description'], 0, 50)); ?>...</div><?php endif; ?></div>';">
+                                                <img src="<?php echo e($adminImageUrl); ?>" alt="<?php echo e($product['name']); ?>" class="w-12 h-12 rounded object-cover mr-3">
                                             <?php else: ?>
                                                 <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center mr-3">
                                                     <span class="text-gray-400 text-xl">📦</span>
@@ -121,7 +91,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"><?php echo e($product['category']); ?></span>
+                                        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"><?php echo e($product['category_name']); ?></span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap font-semibold">Rp <?php echo number_format($product['price'], 0, ',', '.'); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -138,20 +108,61 @@
                         </tbody>
                     </table>
                 </div>
-
+                
                 <!-- Pagination -->
                 <?php if ($totalPages > 1): ?>
-                    <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
-                        <div class="text-sm text-gray-600">
-                            Page <?php echo e($currentPage); ?> of <?php echo e($totalPages); ?>
-                        </div>
-                        <div class="flex space-x-2">
-                            <?php if ($currentPage > 1): ?>
-                                <a href="?route=admin.products&page=<?php echo $currentPage - 1; ?>" class="px-4 py-2 bg-white border rounded hover:bg-gray-50">Previous</a>
-                            <?php endif; ?>
-                            <?php if ($currentPage < $totalPages): ?>
-                                <a href="?route=admin.products&page=<?php echo $currentPage + 1; ?>" class="px-4 py-2 bg-white border rounded hover:bg-gray-50">Next</a>
-                            <?php endif; ?>
+                    <div class="px-6 py-4 border-t border-gray-200">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <!-- Page Info -->
+                            <div class="text-sm text-gray-600">
+                                Halaman <?php echo $currentPage; ?> dari <?php echo $totalPages; ?>
+                            </div>
+                            
+                            <!-- Pagination Buttons -->
+                            <div class="flex items-center space-x-2">
+                                <!-- Previous Button -->
+                                <?php if ($currentPage > 1): ?>
+                                    <a href="?route=admin.products&page=<?php echo $currentPage - 1; ?><?php echo isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : ''; ?>" 
+                                       class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700">
+                                        <i class="fas fa-chevron-left mr-1"></i> Previous
+                                    </a>
+                                <?php else: ?>
+                                    <span class="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed">
+                                        <i class="fas fa-chevron-left mr-1"></i> Previous
+                                    </span>
+                                <?php endif; ?>
+                                
+                                <!-- Page Numbers -->
+                                <?php
+                                $startPage = max(1, $currentPage - 2);
+                                $endPage = min($totalPages, $currentPage + 2);
+                                
+                                for ($i = $startPage; $i <= $endPage; $i++): 
+                                ?>
+                                    <?php if ($i == $currentPage): ?>
+                                        <span class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">
+                                            <?php echo $i; ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <a href="?route=admin.products&page=<?php echo $i; ?><?php echo isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : ''; ?>" 
+                                           class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700">
+                                            <?php echo $i; ?>
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                                
+                                <!-- Next Button -->
+                                <?php if ($currentPage < $totalPages): ?>
+                                    <a href="?route=admin.products&page=<?php echo $currentPage + 1; ?><?php echo isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : ''; ?>" 
+                                       class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700">
+                                        Next <i class="fas fa-chevron-right ml-1"></i>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed">
+                                        Next <i class="fas fa-chevron-right ml-1"></i>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -202,5 +213,44 @@
         }
     }
     </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.querySelector('input[name="search"]');
+        const productContainer = document.querySelector('.bg-white.rounded-lg.shadow');
+        let timeout = null;
+
+        // Mencegah submit form saat tekan Enter
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+
+        function loadProducts(query = '', page = 1) {
+            fetch(`index.php?route=admin.products&ajax=1&search=${encodeURIComponent(query)}&page=${page}&_=${Date.now()}`)
+            .then(res => res.text())
+            .then(html => {
+                productContainer.innerHTML = html;
+            })
+            .catch(err => console.error('Search error:', err));
+        }
+
+        // Realtime search
+        searchInput.addEventListener('keyup', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+            loadProducts(searchInput.value.trim());
+            }, 400);
+        });
+
+        // Delegasi event untuk pagination (agar tetap jalan setelah re-render)
+        document.body.addEventListener('click', (e) => {
+            if (e.target.classList.contains('pagination-btn')) {
+            const page = e.target.getAttribute('data-page');
+            const query = searchInput.value.trim();
+            loadProducts(query, page);
+            }
+        });
+    });
+</script>
+
 </body>
 </html>

@@ -52,16 +52,19 @@ class Address {
         }
 
         $stmt = $this->pdo->prepare("
-            INSERT INTO addresses (user_id, label, place_name, street, city, postal_code, lat, lng, is_default) 
-            VALUES (:user_id, :label, :place_name, :street, :city, :postal_code, :lat, :lng, :is_default)
+            INSERT INTO addresses (user_id, label, street, city, province, regency, district, village, postal_code, lat, lng, is_default) 
+            VALUES (:user_id, :label, :street, :city, :province, :regency, :district, :village, :postal_code, :lat, :lng, :is_default)
         ");
         
         $stmt->execute([
             'user_id' => $userId,
             'label' => $data['label'] ?? null,
-            'place_name' => $data['place_name'] ?? null,
             'street' => $data['street'] ?? null,
             'city' => $data['city'] ?? null,
+            'province' => $data['province'] ?? null,
+            'regency' => $data['regency'] ?? null,
+            'district' => $data['district'] ?? null,
+            'village' => $data['village'] ?? null,
             'postal_code' => $data['postal_code'] ?? null,
             'lat' => $data['lat'] ?? null,
             'lng' => $data['lng'] ?? null,
@@ -83,9 +86,12 @@ class Address {
         $stmt = $this->pdo->prepare("
             UPDATE addresses 
             SET label = :label, 
-                place_name = :place_name, 
                 street = :street, 
                 city = :city, 
+                province = :province, 
+                regency = :regency, 
+                district = :district, 
+                village = :village, 
                 postal_code = :postal_code, 
                 lat = :lat, 
                 lng = :lng, 
@@ -97,9 +103,12 @@ class Address {
             'id' => $id,
             'user_id' => $userId,
             'label' => $data['label'] ?? null,
-            'place_name' => $data['place_name'] ?? null,
             'street' => $data['street'] ?? null,
             'city' => $data['city'] ?? null,
+            'province' => $data['province'] ?? null,
+            'regency' => $data['regency'] ?? null,
+            'district' => $data['district'] ?? null,
+            'village' => $data['village'] ?? null,
             'postal_code' => $data['postal_code'] ?? null,
             'lat' => $data['lat'] ?? null,
             'lng' => $data['lng'] ?? null,

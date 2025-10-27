@@ -10,6 +10,7 @@
  */
 
 require_once __DIR__ . '/../Models/Product.php';
+require_once __DIR__ . '/../Models/Category.php';
 require_once __DIR__ . '/BaseController.php';
 
 class ProductController extends BaseController
@@ -21,12 +22,19 @@ class ProductController extends BaseController
     private $productModel;
     
     /**
+     * Category model instance
+     * @var Category
+     */
+    private $categoryModel;
+    
+    /**
      * Constructor
      */
     public function __construct()
     {
         parent::__construct();
         $this->productModel = new Product($this->pdo);
+        $this->categoryModel = new Category($this->pdo);
     }
     
     /**
@@ -40,7 +48,7 @@ class ProductController extends BaseController
         $offset = ($page - 1) * $limit;
         
         // Get filter parameters
-        $category = $_GET['category'] ?? null;
+        $category = isset($_GET['category']) && $_GET['category'] !== '' ? (int)$_GET['category'] : null;
         $minPrice = isset($_GET['min']) ? (float)$_GET['min'] : null;
         $maxPrice = isset($_GET['max']) ? (float)$_GET['max'] : null;
         $search = $_GET['search'] ?? null;
@@ -73,7 +81,7 @@ class ProductController extends BaseController
         $totalPages = ceil($totalProducts / $limit);
         
         // Get all categories for filter
-        $categories = $this->productModel->getCategories();
+        $categories = $this->categoryModel->getAll();
         
         $this->render('products/index', [
             'title' => 'Products - GoRefill',
@@ -113,7 +121,7 @@ class ProductController extends BaseController
         }
         
         // Get related products (same category, limit 4)
-        $relatedProducts = $this->productModel->getByCategory($product['category'], 4, 0);
+        $relatedProducts = $this->productModel->getByCategory($product['category_id'], 4, 0);
         
         // Remove current product from related
         $relatedProducts = array_filter($relatedProducts, function($p) use ($productId) {
@@ -161,23 +169,26 @@ class ProductController extends BaseController
     private function getFilteredProducts($category, $minPrice, $maxPrice, $limit, $offset, $sort = 'created_at', $order = 'desc')
     {
         try {
-            $sql = "SELECT * FROM products WHERE 1=1";
+            $sql = "SELECT p.*, c.name AS category_name, c.slug AS category_slug
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.id
+                    WHERE 1=1";
             $params = [];
             
             // Category filter
             if ($category) {
-                $sql .= " AND category = ?";
+                $sql .= " AND p.category_id = ?";
                 $params[] = $category;
             }
             
             // Price range filter
             if ($minPrice !== null) {
-                $sql .= " AND price >= ?";
+                $sql .= " AND p.price >= ?";
                 $params[] = $minPrice;
             }
             
             if ($maxPrice !== null) {
-                $sql .= " AND price <= ?";
+                $sql .= " AND p.price <= ?";
                 $params[] = $maxPrice;
             }
             
@@ -193,7 +204,9 @@ class ProductController extends BaseController
                 $order = 'DESC';
             }
             
-            $sql .= " ORDER BY $sort $order LIMIT ? OFFSET ?";
+            // Namespace sort fields with alias "p"
+            $sortColumn = 'p.' . $sort;
+            $sql .= " ORDER BY $sortColumn $order LIMIT ? OFFSET ?";
             $params[] = $limit;
             $params[] = $offset;
             
@@ -219,21 +232,21 @@ class ProductController extends BaseController
     private function countFilteredProducts($category, $minPrice, $maxPrice)
     {
         try {
-            $sql = "SELECT COUNT(*) as total FROM products WHERE 1=1";
+            $sql = "SELECT COUNT(*) as total FROM products p WHERE 1=1";
             $params = [];
             
             if ($category) {
-                $sql .= " AND category = ?";
+                $sql .= " AND p.category_id = ?";
                 $params[] = $category;
             }
             
             if ($minPrice !== null) {
-                $sql .= " AND price >= ?";
+                $sql .= " AND p.price >= ?";
                 $params[] = $minPrice;
             }
             
             if ($maxPrice !== null) {
-                $sql .= " AND price <= ?";
+                $sql .= " AND p.price <= ?";
                 $params[] = $maxPrice;
             }
             
@@ -262,7 +275,7 @@ class ProductController extends BaseController
     {
         return array_filter($products, function($product) use ($category, $minPrice, $maxPrice) {
             // Category filter
-            if ($category && $product['category'] !== $category) {
+            if ($category && $product['category_id'] !== $category) {
                 return false;
             }
             

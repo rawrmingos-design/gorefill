@@ -43,17 +43,20 @@ class Product
     public function getAll($category = null, $limit = 20, $offset = 0, $sortBy = 'created_at', $order = 'desc')
     {
         try {
-            $sql = "SELECT * FROM products WHERE 1=1";
+            $sql = "SELECT p.*, c.name as category_name, c.slug as category_slug 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    WHERE 1=1";
             $params = [];
             
             // Filter by category if provided
             if ($category) {
-                $sql .= " AND category = ?";
+                $sql .= " AND p.category_id = ?";
                 $params[] = $category;
             }
             
             // Validate sort field
-            $allowedFields = ['id', 'name', 'price', 'stock', 'category', 'created_at'];
+            $allowedFields = ['id', 'name', 'price', 'stock', 'category_id', 'created_at'];
             if (!in_array($sortBy, $allowedFields)) {
                 $sortBy = 'created_at';
             }
@@ -64,7 +67,7 @@ class Product
                 $order = 'DESC';
             }
             
-            $sql .= " ORDER BY $sortBy $order LIMIT ? OFFSET ?";
+            $sql .= " ORDER BY p.$sortBy $order LIMIT ? OFFSET ?";
             $params[] = $limit;
             $params[] = $offset;
             
@@ -88,7 +91,10 @@ class Product
     public function getById($id)
     {
         try {
-            $sql = "SELECT * FROM products WHERE id = ? LIMIT 1";
+            $sql = "SELECT p.*, c.name as category_name, c.slug as category_slug 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    WHERE p.id = ? LIMIT 1";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$id]);
             
@@ -110,7 +116,7 @@ class Product
     public function create($data)
     {
         try {
-            $sql = "INSERT INTO products (name, description, price, stock, category, image, created_at) 
+            $sql = "INSERT INTO products (name, description, price, stock, category_id, image, created_at) 
                     VALUES (?, ?, ?, ?, ?, ?, NOW())";
             
             $stmt = $this->pdo->prepare($sql);
@@ -119,7 +125,7 @@ class Product
                 $data['description'] ?? null,
                 $data['price'],
                 $data['stock'] ?? 0,
-                $data['category'],
+                $data['category_id'],
                 $data['image'] ?? null
             ]);
             
@@ -165,9 +171,9 @@ class Product
                 $values[] = $data['stock'];
             }
             
-            if (isset($data['category'])) {
-                $fields[] = "category = ?";
-                $values[] = $data['category'];
+            if (isset($data['category_id'])) {
+                $fields[] = "category_id = ?";
+                $values[] = $data['category_id'];
             }
             
             if (isset($data['image'])) {

@@ -299,6 +299,7 @@ async function getCartCount() {
  * @param {number} count 
  */
 function updateCartBadge(count) {
+    // Update desktop badge
     const badge = document.getElementById('cart-badge');
     if (badge) {
         badge.textContent = count;
@@ -307,6 +308,18 @@ function updateCartBadge(count) {
         badge.classList.add('animate-bounce');
         setTimeout(() => {
             badge.classList.remove('animate-bounce');
+        }, 1000);
+    }
+    
+    // Update mobile badge
+    const mobileBadge = document.getElementById('cart-badge-mobile');
+    if (mobileBadge) {
+        mobileBadge.textContent = count;
+        
+        // Add animation
+        mobileBadge.classList.add('animate-bounce');
+        setTimeout(() => {
+            mobileBadge.classList.remove('animate-bounce');
         }, 1000);
     }
 }

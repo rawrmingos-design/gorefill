@@ -6,23 +6,11 @@
     <title><?php echo e($title ?? 'Edit Product'); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100">
-    <!-- Navbar -->
-    <nav class="bg-purple-600 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center space-x-6">
-                    <h1 class="text-2xl font-bold">🔧 GoRefill Admin</h1>
-                    <a href="?route=admin.dashboard" class="hover:text-purple-200">Dashboard</a>
-                    <a href="?route=admin.products" class="hover:text-purple-200">Products</a>
-                </div>
-                <div class="flex items-center">
-                    <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body class="bg-gray-50">
+    <?php $currentRoute = 'admin.products'; ?>
+    <?php include __DIR__ . '/../partials/navbar.php'; ?>
 
     <!-- Content -->
     <div class="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -44,13 +32,15 @@
 
                     <!-- Category -->
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2">Category *</label>
-                        <input type="text" name="category" required value="<?php echo e($product['category']); ?>" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" list="categories">
-                        <datalist id="categories">
+                        <label class="block text-gray-700 font-semibold mb-2">Kategori *</label>
+                        <select name="category_id" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Pilih Kategori --</option>
                             <?php foreach ($categories as $cat): ?>
-                                <option value="<?php echo e($cat); ?>">
+                                <option value="<?= htmlspecialchars($cat['id']) ?>" <?= $product['category_id'] == $cat['id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($cat['name']) ?>
+                                </option>
                             <?php endforeach; ?>
-                        </datalist>
+                        </select>
                     </div>
 
                     <!-- Price & Stock -->

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo e($title); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <?php 
     // Load Midtrans config for client key
@@ -17,71 +18,34 @@
 <body class="bg-gray-50">
 <?php require_once __DIR__ . '/../../Helpers/ImageHelper.php'; ?>
     <!-- Navbar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="?route=home" class="text-2xl font-bold text-blue-600">
-                        🌊 GoRefill
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="?route=products" class="text-gray-700 hover:text-blue-600">Products</a>
-                    <a href="?route=cart" class="text-gray-700 hover:text-blue-600">
-                        🛒 Cart <span id="cart-badge" class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">0</span>
-                    </a>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <a href="?route=admin.dashboard" class="text-purple-600 hover:text-purple-800 font-semibold flex items-center">
-                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                Admin Panel
-                            </a>
-                        <?php endif; ?>
-                        <a href="?route=profile" class="text-gray-700 hover:text-blue-600 flex items-center">
-                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            <?php echo e($_SESSION['name']); ?>
-                        </a>
-                        <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</a>
-                    <?php else: ?>
-                        <a href="?route=auth.login" class="text-blue-600 hover:text-blue-800">Login</a>
-                        <a href="?route=auth.register" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Register</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php include __DIR__ . '../../layouts/navbar.php'; ?>
 
     <!-- Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Breadcrumb -->
-        <nav class="text-sm mb-6">
-            <a href="?route=home" class="text-blue-600 hover:underline">Home</a>
-            <span class="mx-2">/</span>
-            <a href="?route=products" class="text-blue-600 hover:underline">Products</a>
-            <span class="mx-2">/</span>
-            <span class="text-gray-600"><?php echo e($product['name']); ?></span>
+        <nav class="flex items-center text-sm mb-6 bg-white px-4 py-3 rounded-lg shadow-sm">
+            <a href="?route=home" class="text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-home mr-2"></i>Home</a>
+            <i class="fas fa-chevron-right mx-3 text-gray-400 text-xs"></i>
+            <a href="?route=products" class="text-blue-600 hover:text-blue-800 font-medium">Produk</a>
+            <i class="fas fa-chevron-right mx-3 text-gray-400 text-xs"></i>
+            <span class="text-gray-600 font-medium"><?php echo e($product['name']); ?></span>
         </nav>
 
         <!-- Product Detail -->
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-12">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden mb-12">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
                 <!-- Product Image -->
-                <div>
+                <div class="sticky top-8">
                     <?php
                     $imageUrl = ImageHelper::getImageUrl($product['image']);
                     if ($imageUrl): ?>
                         <img src="<?php echo e($imageUrl); ?>" 
                              alt="<?php echo e($product['name']); ?>" 
-                             class="w-full rounded-lg"
-                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center\'><span class=\'text-9xl\'>📦</span></div>';">
+                             class="w-full rounded-xl shadow-lg hover:shadow-2xl transition"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-96 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center\'><i class=\'fas fa-box text-9xl text-blue-400\'></i></div>';">
                     <?php else: ?>
-                        <div class="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
-                            <span class="text-9xl">📦</span>
+                        <div class="w-full h-96 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-box text-9xl text-blue-400"></i>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -89,60 +53,75 @@
                 <!-- Product Info -->
                 <div>
                     <div class="mb-4">
-                        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                            <?php echo e($product['category']); ?>
+                        <span class="inline-block px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-bold shadow-md">
+                            <i class="fas fa-tag mr-2"></i><?php echo e($product['category_name'] ?? 'Umum'); ?>
                         </span>
                     </div>
 
-                    <h1 class="text-4xl font-bold text-gray-800 mb-4"><?php echo e($product['name']); ?></h1>
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6 leading-tight"><?php echo e($product['name']); ?></h1>
                     
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold text-blue-600">Rp <?php echo number_format($product['price'], 0, ',', '.'); ?></span>
+                    <div class="mb-6 bg-blue-50 p-6 rounded-xl border-2 border-blue-200">
+                        <p class="text-sm text-gray-600 mb-2">Harga</p>
+                        <span class="text-5xl font-bold text-blue-600">Rp <?php echo number_format($product['price'], 0, ',', '.'); ?></span>
                     </div>
 
                     <?php if ($product['description']): ?>
-                        <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Description</h3>
-                            <p class="text-gray-600 leading-relaxed"><?php echo nl2br(e($product['description'])); ?></p>
+                        <div class="mb-6 bg-gray-50 p-6 rounded-xl">
+                            <h3 class="text-xl font-bold text-gray-800 mb-3 flex items-center">
+                                <i class="fas fa-info-circle text-blue-600 mr-2"></i> Deskripsi Produk
+                            </h3>
+                            <p class="text-gray-700 leading-relaxed"><?php echo nl2br(e($product['description'])); ?></p>
                         </div>
                     <?php endif; ?>
 
                     <!-- Stock Status -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Availability</h3>
+                    <div class="mb-6 p-4 rounded-xl <?php echo $product['stock'] > 0 ? 'bg-green-50 border-2 border-green-200' : 'bg-red-50 border-2 border-red-200'; ?>">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                            <i class="fas fa-box mr-2"></i> Ketersediaan Stok
+                        </h3>
                         <?php if ($product['stock'] > 0): ?>
-                            <p class="text-green-600 font-semibold">✓ In Stock (<?php echo e($product['stock']); ?> available)</p>
+                            <p class="text-green-700 font-bold text-lg">
+                                <i class="fas fa-check-circle mr-2"></i> Tersedia (<?php echo e($product['stock']); ?> unit)
+                            </p>
                         <?php else: ?>
-                            <p class="text-red-600 font-semibold">✗ Out of Stock</p>
+                            <p class="text-red-700 font-bold text-lg">
+                                <i class="fas fa-times-circle mr-2"></i> Stok Habis
+                            </p>
                         <?php endif; ?>
                     </div>
 
                     <!-- Quantity Selector -->
                     <?php if ($product['stock'] > 0): ?>
-                        <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Quantity</h3>
+                        <div class="mb-6 bg-gray-50 p-6 rounded-xl">
+                            <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                                <i class="fas fa-calculator mr-2"></i> Jumlah Pembelian
+                            </h3>
                             <div class="flex items-center space-x-4">
-                                <button onclick="decrementQty()" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold">-</button>
+                                <button onclick="decrementQty()" class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-xl transition shadow-md">
+                                    <i class="fas fa-minus"></i>
+                                </button>
                                 <input type="number" id="quantity" value="1" min="1" max="<?php echo e($product['stock']); ?>" 
-                                       class="w-20 text-center border rounded-lg py-2 font-semibold">
-                                <button onclick="incrementQty()" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold">+</button>
+                                       class="w-24 text-center border-2 border-blue-300 rounded-lg py-3 font-bold text-xl focus:ring-2 focus:ring-blue-500">
+                                <button onclick="incrementQty()" class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-xl transition shadow-md">
+                                    <i class="fas fa-plus"></i>
+                                </button>
                             </div>
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             <button onclick="addToCart(<?php echo e($product['id']); ?>)" 
-                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg text-lg transition">
-                                🛒 Add to Cart
+                                    class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-5 rounded-xl text-lg transition shadow-lg hover:shadow-2xl transform hover:scale-105">
+                                <i class="fas fa-shopping-cart mr-2"></i> Tambah ke Keranjang
                             </button>
                             <button onclick="buyNow(<?php echo e($product['id']); ?>)" 
-                                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg text-lg transition">
-                                ⚡ Buy Now
+                                    class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-5 rounded-xl text-lg transition shadow-lg hover:shadow-2xl transform hover:scale-105">
+                                <i class="fas fa-bolt mr-2"></i> Beli Sekarang
                             </button>
                         </div>
                     <?php else: ?>
-                        <button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-lg text-lg cursor-not-allowed">
-                            Out of Stock
+                        <button disabled class="w-full bg-gray-400 text-white font-bold py-5 rounded-xl text-lg cursor-not-allowed opacity-60">
+                            <i class="fas fa-ban mr-2"></i> Stok Habis
                         </button>
                     <?php endif; ?>
                 </div>
@@ -255,7 +234,7 @@
         });
     }
     </script>
-    <script src="assets/js/cart.js"></script>
+    <script src="/public/assets/js/cart.js"></script>
     <script>
     // Override addToCart to include quantity from selector
     const originalAddToCart = addToCart;

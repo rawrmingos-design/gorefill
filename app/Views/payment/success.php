@@ -11,32 +11,7 @@
 <?php require_once __DIR__ . '/../../Helpers/ImageHelper.php'; ?>
 
     <!-- Navbar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="?route=home" class="text-2xl font-bold text-blue-600">
-                        🌊 GoRefill
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="?route=products" class="text-gray-700 hover:text-blue-600">Products</a>
-                    <a href="?route=cart" class="text-gray-700 hover:text-blue-600">
-                        🛒 Cart
-                    </a>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="?route=profile" class="text-gray-700 hover:text-blue-600">
-                            <i class="fas fa-user"></i> <?php echo htmlspecialchars($_SESSION['name']); ?>
-                        </a>
-                        <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</a>
-                    <?php else: ?>
-                        <a href="?route=auth.login" class="text-blue-600 hover:text-blue-800">Login</a>
-                        <a href="?route=auth.register" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Register</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php include __DIR__ . '../../layouts/navbar.php'; ?>
 
     <!-- Success Message -->
     <div class="max-w-3xl mx-auto px-4 py-12">

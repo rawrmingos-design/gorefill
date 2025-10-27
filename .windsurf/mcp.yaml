@@ -1,0 +1,161 @@
+# =======================================================
+# Model Context Protocol configuration for Windsurf
+# Project: GoRefill
+# Author: Fahmi Aksan Nugroho
+# Updated: 2025-10-23
+# Description: PHP Native e-commerce system for refill services
+# =======================================================
+
+project:
+  name: "GoRefill"
+  description: >
+    Sistem e-commerce PHP Native untuk layanan isi ulang air, LPG, dan kebutuhan rumah tangga.
+    Menggunakan Leaflet.js untuk peta lokasi & tracking kurir, serta Midtrans API untuk pembayaran online otomatis.
+  language: "PHP"
+  mcp_version: 1.0
+
+# =======================================================
+# 1️⃣ FILES TO INDEX & TRACK
+# =======================================================
+include:
+  - "README.md"
+  - "migrations/gorefill.sql"
+  - "app/**/*.php"
+  - "config/config.php"
+  - "config/midtrans.php"
+  - "public/index.php"
+  - "public/assets/js/*.js"
+
+# =======================================================
+# 2️⃣ RULES & BEST PRACTICES
+# =======================================================
+rules:
+  - "Gunakan arsitektur MVC (Model, View, Controller) secara ketat."
+  - "Seluruh query database wajib menggunakan PDO prepared statements."
+  - "Tidak boleh ada query SQL di file View."
+  - "Gunakan struktur tabel sesuai file gorefill.sql sebagai acuan utama."
+  - "Gunakan PascalCase untuk nama class, camelCase untuk method dan variabel."
+  - "Pisahkan logic, view, dan database secara disiplin."
+  - "Gunakan session PHP untuk autentikasi dan cart management."
+  - "Gunakan Leaflet.js untuk semua fitur peta dan pelacakan, bukan Google Maps."
+  - "Gunakan Midtrans API (Snap.js & server key) untuk semua pembayaran online."
+  - "Simpan konfigurasi Midtrans di config/midtrans.php dan jangan hardcode key di kode."
+  - "Gunakan SweetAlert untuk notifikasi UI di frontend."
+  - "Gunakan password_hash() dan password_verify() untuk autentikasi."
+  - "Pastikan semua input user disanitasi (filter_input, htmlspecialchars)."
+  - "Komentari fungsi publik dengan deskripsi singkat untuk membantu reasoning AI."
+  - "Setiap fitur baru wajib dicatat di README.md agar model memahami konteks penuh proyek."
+
+# =======================================================
+# 3️⃣ CONTEXT RELATIONSHIPS
+# =======================================================
+context_links:
+  - from: "app/Controllers"
+    to: "app/Models"
+    relation: "uses"
+  - from: "app/Controllers"
+    to: "app/Views"
+    relation: "renders"
+  - from: "app/Controllers/CheckoutController.php"
+    to: "config/midtrans.php"
+    relation: "reads_config"
+  - from: "app/Controllers/CourierController.php"
+    to: "public/assets/js/tracking.js"
+    relation: "interacts"
+  - from: "app/Models"
+    to: "migrations/gorefill.sql"
+    relation: "implements_schema"
+
+# =======================================================
+# 4️⃣ INTENTS (AI Behavior)
+# =======================================================
+intents:
+  - "Gunakan file gorefill.sql sebagai referensi struktur database."
+  - "Gunakan Leaflet.js untuk peta alamat dan pelacakan kurir."
+  - "Gunakan Midtrans API untuk proses pembayaran online (Snap Token, Callback)."
+  - "Gunakan prepared statements pada setiap operasi database."
+  - "Gunakan fetch API (AJAX) untuk update cart dan lokasi kurir."
+  - "Pastikan controller baru selalu diregister di public/index.php routing."
+  - "Saat menulis fungsi checkout, sertakan validasi voucher dan Midtrans Snap token."
+  - "Sertakan komentar sebelum fungsi besar untuk memudahkan reasoning model."
+  - "Gunakan SweetAlert di frontend untuk semua alert sukses/gagal."
+  - "Usulkan optimasi query atau caching jika beban database berat."
+
+# =======================================================
+# 5️⃣ EXAMPLES (Reasoning Templates)
+# =======================================================
+examples:
+  - input: "Tambahkan fitur pembayaran otomatis dengan Midtrans"
+    output: >
+      Buat file config/midtrans.php untuk menyimpan Server Key dan Client Key.
+      Di CheckoutController, gunakan Midtrans Snap API untuk generate Snap Token.
+      Tampilkan Snap popup di frontend (Snap.pay).
+      Buat PaymentController untuk handle callback Midtrans dan update status order ke 'paid'.
+  - input: "Tambahkan peta alamat pengguna dengan Leaflet"
+    output: >
+      Di halaman checkout, buat elemen <div id='map'></div>.
+      Gunakan Leaflet.js untuk menampilkan peta OpenStreetMap.
+      Saat user klik peta, ambil lat/lng dan simpan ke hidden input 'lat' dan 'lng'.
+      Simpan data tersebut ke tabel 'addresses' di database.
+
+# =======================================================
+# 6️⃣ SUGGESTION MODES (AI Instruction Templates)
+# =======================================================
+suggestion_modes:
+  coding:
+    goal: "Menulis kode PHP native dengan arsitektur MVC GoRefill."
+    prefer_files:
+      - "app/Controllers"
+      - "app/Models"
+    constraints:
+      - "Gunakan PDO prepared statements."
+      - "Gunakan komentar singkat di atas setiap fungsi utama."
+      - "Ikuti flow bisnis yang tertulis di README.md."
+  database:
+    goal: "Menulis atau memperbarui query SQL dan migrasi berdasarkan gorefill.sql."
+    prefer_files:
+      - "migrations/gorefill.sql"
+    constraints:
+      - "Gunakan MySQL syntax dengan tipe data konsisten."
+      - "Gunakan foreign key dan ON DELETE CASCADE jika perlu."
+  frontend:
+    goal: "Membuat tampilan dengan TailwindCSS, SweetAlert, dan Leaflet.js."
+    prefer_files:
+      - "app/Views"
+      - "public/assets/js"
+    constraints:
+      - "Gunakan fetch API untuk AJAX."
+      - "Gunakan Leaflet map dengan marker interaktif."
+      - "Gunakan SweetAlert untuk feedback user."
+
+# =======================================================
+# 7️⃣ FILE RELATION MAPPING
+# =======================================================
+relations:
+  - "app/Controllers/ProductController.php uses app/Models/Product.php"
+  - "app/Controllers/CartController.php uses session and app/Models/Product.php"
+  - "app/Controllers/CheckoutController.php uses app/Models/Order.php, Voucher.php, and Midtrans config"
+  - "app/Controllers/PaymentController.php verifies Midtrans callback and updates orders"
+  - "app/Controllers/AdminController.php manages CRUD via Product.php, User.php, Order.php"
+  - "app/Controllers/CourierController.php updates courier_locations (Leaflet tracking)"
+  - "public/index.php routes requests to all controllers"
+
+# =======================================================
+# 8️⃣ MCP BEHAVIOR SETTINGS
+# =======================================================
+mcp_settings:
+  reasoning_depth: "deep"
+  context_refresh: "on_save"
+  max_file_contexts: 12
+  prefer_inline_explanations: true
+  auto_update_context: true
+  ignore_patterns:
+    - "vendor/"
+    - "node_modules/"
+    - ".git/"
+    - ".env"
+    - "storage/"
+
+# =======================================================
+# ✅ END OF CONFIGURATION
+# =======================================================

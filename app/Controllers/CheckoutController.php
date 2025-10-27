@@ -307,22 +307,33 @@ class CheckoutController extends BaseController {
         }
 
         // Validate input
-        $required = ['label', 'street', 'city'];
+        $required = ['label', 'street', 'province', 'regency', 'district', 'village'];
         foreach ($required as $field) {
             if (empty($_POST[$field])) {
-                echo json_encode(['success' => false, 'message' => 'Field ' . $field . ' wajib diisi']);
+                $fieldNames = [
+                    'label' => 'Label Alamat',
+                    'street' => 'Alamat Lengkap',
+                    'province' => 'Provinsi',
+                    'regency' => 'Kabupaten/Kota',
+                    'district' => 'Kecamatan',
+                    'village' => 'Kelurahan/Desa'
+                ];
+                echo json_encode(['success' => false, 'message' => $fieldNames[$field] . ' wajib diisi. Pastikan Anda sudah memilih lokasi di peta.']);
                 exit;
             }
         }
 
         $data = [
             'label' => htmlspecialchars($_POST['label']),
-            'place_name' => htmlspecialchars($_POST['place_name'] ?? ''),
             'street' => htmlspecialchars($_POST['street']),
-            'city' => htmlspecialchars($_POST['city']),
+            'city' => htmlspecialchars($_POST['city'] ?? ''),
+            'province' => htmlspecialchars($_POST['province'] ?? ''),
+            'regency' => htmlspecialchars($_POST['regency'] ?? ''),
+            'district' => htmlspecialchars($_POST['district'] ?? ''),
+            'village' => htmlspecialchars($_POST['village'] ?? ''),
             'postal_code' => htmlspecialchars($_POST['postal_code'] ?? ''),
-            'lat' => $_POST['lat'] ?? null,
-            'lng' => $_POST['lng'] ?? null,
+            'lat' => $_POST['latitude'] ?? $_POST['lat'] ?? null,
+            'lng' => $_POST['longitude'] ?? $_POST['lng'] ?? null,
             'is_default' => isset($_POST['is_default']) ? 1 : 0
         ];
 
@@ -491,8 +502,8 @@ class CheckoutController extends BaseController {
                 'phone' => $address['phone'] ?? '-',
                 'shipping_address' => [
                     'first_name' => $address['label'],
-                    'address' => $address['place_name'] . ', ' . $address['street'],
-                    'city' => $address['city'],
+                    'address' => $address['street'] . ($address['village'] ? ', ' . $address['village'] : ''),
+                    'city' => $address['regency'] ?? $address['city'],
                     'postal_code' => $address['postal_code'],
                     'country_code' => 'IDN'
                 ]

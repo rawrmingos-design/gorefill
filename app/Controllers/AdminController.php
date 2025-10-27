@@ -10,6 +10,7 @@
 
 require_once __DIR__ . '/../Models/Product.php';
 require_once __DIR__ . '/../Models/User.php';
+require_once __DIR__ . '/../Models/Category.php';
 require_once __DIR__ . '/BaseController.php';
 
 class AdminController extends BaseController
@@ -27,6 +28,12 @@ class AdminController extends BaseController
     private $userModel;
     
     /**
+     * Category model instance
+     * @var Category
+     */
+    private $categoryModel;
+    
+    /**
      * Constructor
      */
     public function __construct()
@@ -34,6 +41,7 @@ class AdminController extends BaseController
         parent::__construct();
         $this->productModel = new Product($this->pdo);
         $this->userModel = new User($this->pdo);
+        $this->categoryModel = new Category($this->pdo);
     }
     
     /**
@@ -60,55 +68,85 @@ class AdminController extends BaseController
     }
     
     /**
-     * Product List with Pagination
+     * Product List with Search & Pagination
      */
     public function products()
     {
-        // Require admin role
         $this->requireAuth('admin');
-        
-        // Get pagination parameters
+
         $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
-        
-        // Get filter parameters
+
         $category = $_GET['category'] ?? null;
-        $search = $_GET['search'] ?? null;
-        
-        // Get sorting parameters
+        $search = trim($_GET['search'] ?? '');
         $sort = $_GET['sort'] ?? 'created_at';
         $order = $_GET['order'] ?? 'desc';
-        
-        // Validate sort field
-        $allowedSortFields = ['no', 'name', 'created_at'];
+
+        $allowedSortFields = ['id', 'name', 'price', 'stock', 'created_at'];
         if (!in_array($sort, $allowedSortFields)) {
             $sort = 'created_at';
         }
-        
-        // Validate order
-        if (!in_array($order, ['asc', 'desc'])) {
-            $order = 'desc';
+
+        $order = strtolower($order) === 'asc' ? 'asc' : 'desc';
+
+        $query = "SELECT p.*, c.name AS category_name
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.id
+                WHERE 1=1";
+
+        $params = [];
+
+        if ($category) {
+            $query .= " AND p.category_id = ?";
+            $params[] = $category;
         }
-        
-        // Convert 'no' to 'id' for database query
-        $dbSortField = $sort === 'no' ? 'id' : $sort;
-        
-        // Get products
-        if ($search) {
-            $products = $this->productModel->search($search, $limit);
-            $totalProducts = count($products);
-        } else {
-            $products = $this->productModel->getAll($category, $limit, $offset, $dbSortField, $order);
-            $totalProducts = $this->productModel->count($category);
+
+        if ($search !== '') {
+            $query .= " AND (p.name LIKE ? OR p.description LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
         }
-        
+
+        $query .= " ORDER BY p.$sort $order LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute($params);
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $countSql = "SELECT COUNT(*) FROM products WHERE 1=1";
+        $countParams = [];
+
+        if ($category) {
+            $countSql .= " AND category_id = ?";
+            $countParams[] = $category;
+        }
+
+        if ($search !== '') {
+            $countSql .= " AND (name LIKE ? OR description LIKE ?)";
+            $countParams[] = "%$search%";
+            $countParams[] = "%$search%";
+        }
+
+        $countStmt = $this->pdo->prepare($countSql);
+        $countStmt->execute($countParams);
+        $totalProducts = (int) $countStmt->fetchColumn();
+
         $totalPages = ceil($totalProducts / $limit);
-        
+
+        if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
+            $currentPage = $page;
+            $totalPages = $totalPages;
+            include __DIR__ . '/../Views/admin/products/_table.php';
+            exit;
+        }
+
         $this->render('admin/products/index', [
             'title' => 'Manage Products - Admin',
             'products' => $products,
-            'categories' => $this->productModel->getCategories(),
+            'categories' => $this->categoryModel->getAll(),
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalProducts' => $totalProducts,
@@ -116,6 +154,7 @@ class AdminController extends BaseController
             'searchKeyword' => $search
         ]);
     }
+
     
     /**
      * Show Create Product Form
@@ -127,7 +166,7 @@ class AdminController extends BaseController
         
         $this->render('admin/products/create', [
             'title' => 'Add New Product - Admin',
-            'categories' => $this->productModel->getCategories()
+            'categories' => $this->categoryModel->getAll()
         ]);
     }
     
@@ -149,7 +188,7 @@ class AdminController extends BaseController
             'name' => 'required|min:3|max:200',
             'price' => 'required|numeric',
             'stock' => 'required|numeric',
-            'category' => 'required'
+            'category_id' => 'required|numeric'
         ]);
         
         if (!empty($errors)) {
@@ -194,7 +233,7 @@ class AdminController extends BaseController
             'description' => trim($_POST['description'] ?? ''),
             'price' => (float) $_POST['price'],
             'stock' => (int) $_POST['stock'],
-            'category' => trim($_POST['category']),
+            'category_id' => (int) $_POST['category_id'],
             'image' => $imageName
         ];
         
@@ -241,7 +280,7 @@ class AdminController extends BaseController
         $this->render('admin/products/edit', [
             'title' => 'Edit Product - Admin',
             'product' => $product,
-            'categories' => $this->productModel->getCategories()
+            'categories' => $this->categoryModel->getAll()
         ]);
     }
     
@@ -275,7 +314,7 @@ class AdminController extends BaseController
             'name' => 'required|min:3|max:200',
             'price' => 'required|numeric',
             'stock' => 'required|numeric',
-            'category' => 'required'
+            'category_id' => 'required|numeric'
         ]);
         
         if (!empty($errors)) {
@@ -288,7 +327,7 @@ class AdminController extends BaseController
             'description' => trim($_POST['description'] ?? ''),
             'price' => (float) $_POST['price'],
             'stock' => (int) $_POST['stock'],
-            'category' => trim($_POST['category'])
+            'category_id' => (int) $_POST['category_id']
         ];
         
         // Handle image update

@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- Leaflet.js for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+    
     <?php 
     // Load Midtrans config for client key
     $midtransConfig = require __DIR__ . '/../../../config/midtrans.php';
@@ -19,37 +27,7 @@
 <body class="bg-gray-50">
 <?php require_once __DIR__ . '/../../Helpers/ImageHelper.php'; ?>
     <!-- Navbar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="?route=home" class="text-2xl font-bold text-blue-600">
-                        🌊 GoRefill
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="?route=products" class="text-gray-700 hover:text-blue-600">Products</a>
-                   <a href="?route=cart" class="text-gray-700 hover:text-blue-600">
-                        🛒 Cart <span id="cart-badge" class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">0</span>
-                    </a>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <a href="?route=admin.dashboard" class="text-purple-600 hover:text-purple-800 font-semibold">
-                                <i class="fas fa-cog"></i> Admin
-                            </a>
-                        <?php endif; ?>
-                        <a href="?route=profile" class="text-gray-700 hover:text-blue-600">
-                            <i class="fas fa-user"></i> <?= htmlspecialchars($_SESSION['name']) ?>
-                        </a>
-                        <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</a>
-                    <?php else: ?>
-                        <a href="?route=auth.login" class="text-green-600 hover:text-blue-800">Login</a>
-                        <a href="?route=auth.register" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Register</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php include __DIR__ . '../../layouts/navbar.php'; ?>
 
     <div class="container mx-auto px-4 py-8 max-w-7xl">
         <div class="mb-6">
@@ -164,16 +142,19 @@
                                                         </span>
                                                     <?php endif; ?>
                                                 </div>
-                                                <?php if ($address['place_name']): ?>
-                                                    <p class="text-sm text-gray-700 font-medium">
-                                                        <?= htmlspecialchars($address['place_name']) ?>
-                                                    </p>
-                                                <?php endif; ?>
                                                 <p class="text-sm text-gray-600">
                                                     <?= htmlspecialchars($address['street']) ?>
                                                 </p>
+                                                <?php if ($address['village'] || $address['district']): ?>
+                                                    <p class="text-sm text-gray-600">
+                                                        <?= htmlspecialchars($address['village']) ?><?= $address['district'] ? ', ' . htmlspecialchars($address['district']) : '' ?>
+                                                    </p>
+                                                <?php endif; ?>
                                                 <p class="text-sm text-gray-600">
-                                                    <?= htmlspecialchars($address['city']) ?>
+                                                    <?= htmlspecialchars($address['regency'] ?? $address['city']) ?>
+                                                    <?php if ($address['province']): ?>
+                                                        , <?= htmlspecialchars($address['province']) ?>
+                                                    <?php endif; ?>
                                                     <?php if ($address['postal_code']): ?>
                                                         - <?= htmlspecialchars($address['postal_code']) ?>
                                                     <?php endif; ?>
@@ -313,27 +294,48 @@
     </div>
 
     <!-- Add Address Modal -->
-    <div id="addAddressModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold">Tambah Alamat Baru</h3>
+    <div id="addAddressModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg w-full max-w-2xl mx-4 my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 p-6 pb-0 sticky top-0 bg-white z-10">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>
+                    Tambah Alamat Baru
+                </h3>
                 <button onclick="closeAddAddressModal()" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
             
-            <form id="addAddressForm" class="space-y-4">
+            <form id="addAddressForm" class="space-y-4 p-6 pt-2">
+                <!-- Map Container -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-map-marked-alt text-green-600 mr-1"></i>
+                            Pilih Lokasi di Peta
+                        </label>
+                        <button type="button" 
+                                onclick="getCurrentLocation()" 
+                                class="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center">
+                            <i class="fas fa-crosshairs mr-1"></i>
+                            Gunakan Lokasi Saya
+                        </button>
+                    </div>
+                    <div id="map" class="w-full h-64 rounded-lg border-2 border-gray-300 shadow-sm"></div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Klik pada peta untuk menempatkan pin di lokasi pengiriman Anda
+                    </p>
+                </div>
+
+                <!-- Hidden inputs for coordinates -->
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Label Alamat *</label>
                     <input type="text" name="label" required
                            placeholder="Contoh: Rumah, Kantor"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tempat</label>
-                    <input type="text" name="place_name"
-                           placeholder="Contoh: Gedung ABC"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                 </div>
                 
@@ -344,19 +346,70 @@
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
                 </div>
                 
+                <!-- Location Data from Reverse Geocoding -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kota *</label>
-                        <input type="text" name="city" required
-                               placeholder="Kota"
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-map text-green-600 mr-1 text-xs"></i>
+                            Provinsi *
+                        </label>
+                        <input type="text" name="province" id="province" required readonly
+                               placeholder="Akan terisi otomatis"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-building text-green-600 mr-1 text-xs"></i>
+                            Kabupaten/Kota *
+                        </label>
+                        <input type="text" name="regency" id="regency" required readonly
+                               placeholder="Akan terisi otomatis"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-map-signs text-green-600 mr-1 text-xs"></i>
+                            Kecamatan *
+                        </label>
+                        <input type="text" name="district" id="district" required readonly
+                               placeholder="Akan terisi otomatis"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-home text-green-600 mr-1 text-xs"></i>
+                            Kelurahan/Desa *
+                        </label>
+                        <input type="text" name="village" id="village" required readonly
+                               placeholder="Akan terisi otomatis"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-city text-green-600 mr-1 text-xs"></i>
+                            Kota (Detail)
+                        </label>
+                        <input type="text" name="city" id="city"
+                               placeholder="Detail kota/area"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode Pos</label>
-                        <input type="text" name="postal_code"
-                               placeholder="12345"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-mail-bulk text-green-600 mr-1 text-xs"></i>
+                            Kode Pos
+                        </label>
+                        <input type="text" name="postal_code" id="postal_code" readonly
+                               placeholder="Akan terisi otomatis"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
                     </div>
                 </div>
                 
@@ -365,14 +418,14 @@
                     <label for="isDefault" class="text-sm text-gray-700">Jadikan alamat utama</label>
                 </div>
                 
-                <div class="flex gap-3 pt-2">
+                <div class="flex gap-3 pt-4 sticky bottom-0 bg-white pb-6 border-t mt-4 pt-4">
                     <button type="button" onclick="closeAddAddressModal()"
-                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        Batal
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+                        <i class="fas fa-times mr-1"></i> Batal
                     </button>
                     <button type="submit"
-                            class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                        Simpan
+                            class="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
+                        <i class="fas fa-save mr-1"></i> Simpan Alamat
                     </button>
                 </div>
             </form>
@@ -387,6 +440,7 @@
     </footer>
 
     <script src="public/assets/js/cart.js"></script>
+    <script src="/public/assets/js/maps.js"></script>
     <script>
         // Select address
         function selectAddress(addressId) {
@@ -476,15 +530,7 @@
             });
         }
 
-        // Add address modal
-        function openAddAddressModal() {
-            document.getElementById('addAddressModal').classList.remove('hidden');
-        }
-
-        function closeAddAddressModal() {
-            document.getElementById('addAddressModal').classList.add('hidden');
-            document.getElementById('addAddressForm').reset();
-        }
+        // Add address modal functions are now in maps.js
 
         // Handle add address form submission
         document.getElementById('addAddressForm').addEventListener('submit', function(e) {

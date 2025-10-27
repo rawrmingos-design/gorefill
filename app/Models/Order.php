@@ -54,9 +54,9 @@ class Order {
                 'total' => $total,
                 'shipping_name' => $shippingInfo['recipient_name'] ?? $shippingInfo['label'],
                 'shipping_phone' => $shippingInfo['phone'] ?? '-',
-                'shipping_address' => $shippingInfo['place_name'] . ', ' . $shippingInfo['street'],
-                'shipping_city' => $shippingInfo['city'],
-                'shipping_postal_code' => $shippingInfo['postal_code']
+                'shipping_address' => $shippingInfo['street'] . ($shippingInfo['village'] ? ', ' . $shippingInfo['village'] : '') . ($shippingInfo['district'] ? ', ' . $shippingInfo['district'] : ''),
+                'shipping_city' => $shippingInfo['regency'] ?? $shippingInfo['city'] ?? '',
+                'shipping_postal_code' => $shippingInfo['postal_code'] ?? ''
             ]);
             
             $orderId = $this->pdo->lastInsertId();
@@ -336,5 +336,97 @@ class Order {
         ");
         
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Assign courier to an order
+     * Week 3 Day 12: Courier Tracking Backend
+     * 
+     * @param int $orderId - Order ID
+     * @param int $courierId - User ID with courier role
+     * @return bool Success status
+     */
+    public function assignCourier($orderId, $courierId) {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE orders 
+                SET courier_id = :courier_id,
+                    status = 'packing'
+                WHERE id = :order_id
+                AND payment_status = 'paid'
+            ");
+            
+            return $stmt->execute([
+                'order_id' => $orderId,
+                'courier_id' => $courierId
+            ]);
+        } catch (\PDOException $e) {
+            error_log("Order assignCourier error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get all orders assigned to a courier
+     * Week 3 Day 12: Courier Tracking Backend
+     * 
+     * @param int $courierId - Courier user ID
+     * @return array Orders with customer & item details
+     */
+    public function getOrdersForCourier($courierId) {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                o.id,
+                o.order_number,
+                o.total,
+                o.status,
+                o.created_at,
+                o.shipping_name,
+                o.shipping_phone,
+                o.shipping_address,
+                o.shipping_city,
+                o.shipping_postal_code,
+                o.shipping_latitude,
+                o.shipping_longitude,
+                u.name as customer_name,
+                u.email as customer_email,
+                u.phone as customer_phone,
+                COUNT(oi.id) as item_count
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            WHERE o.courier_id = :courier_id
+            AND o.payment_status = 'paid'
+            AND o.status IN ('packing', 'shipped', 'delivered')
+            GROUP BY o.id
+            ORDER BY 
+                FIELD(o.status, 'packing', 'shipped', 'delivered'),
+                o.created_at DESC
+        ");
+        
+        $stmt->execute(['courier_id' => $courierId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get order items for courier view
+     * 
+     * @param int $orderId - Order ID
+     * @return array Order items
+     */
+    public function getOrderItemsForCourier($orderId) {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                product_name,
+                product_image,
+                quantity,
+                price,
+                subtotal
+            FROM order_items
+            WHERE order_id = :order_id
+        ");
+        
+        $stmt->execute(['order_id' => $orderId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
