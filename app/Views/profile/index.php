@@ -93,7 +93,7 @@
                         </div>
                         <div class="border-t pt-3 flex justify-between items-center">
                             <span class="text-gray-600 font-semibold">💰 Total Belanja</span>
-                            <span class="font-bold text-blue-600">Rp <?= number_format($stats['total_spent'], 0, ',', '.') ?></span>
+                            <span class="font-bold text-blue-600">Rp <?= number_format($stats['total_spent'] ?? 0, 0, ',', '.') ?></span>
                         </div>
                     </div>
                 </div>
@@ -150,10 +150,10 @@
                                     <div class="flex justify-between items-center mt-3">
                                         <div>
                                             <p class="text-lg font-bold text-gray-800">
-                                                Rp <?= number_format($order['total'], 0, ',', '.') ?>
+                                                Rp <?= number_format($order['total'] ?? 0, 0, ',', '.') ?>
                                             </p>
                                             <p class="text-sm text-gray-600">
-                                                Status: <span class="font-semibold"><?= ucfirst($order['status']) ?></span>
+                                                Status: <span class="font-semibold"><?= ucfirst($order['status'] ?? 'pending') ?></span>
                                             </p>
                                         </div>
                                         <div class="flex gap-2">
@@ -178,12 +178,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white shadow-lg mt-12">
-        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
-            <p>&copy; 2025 GoRefill. All rights reserved.</p>
-        </div>
-    </footer>
+    <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
     <script>
         function payNow(snapToken) {

@@ -36,7 +36,7 @@
           </span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap font-semibold">
-          Rp <?php echo number_format($product['price'], 0, ',', '.'); ?>
+          Rp <?php echo number_format($product['price'] ?? 0, 0, ',', '.'); ?>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           <span class="font-semibold <?php echo $product['stock'] > 10 ? 'text-green-600' : ($product['stock'] > 0 ? 'text-orange-600' : 'text-red-600'); ?>">

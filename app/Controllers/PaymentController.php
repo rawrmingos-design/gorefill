@@ -1,6 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../Models/Order.php';
+require_once __DIR__ . '/../Models/Product.php';
+require_once __DIR__ . '/../Services/MailService.php';
+require_once __DIR__ . '/../../config/midtrans.php';
 require_once __DIR__ . '/BaseController.php';
 
 // Autoload Midtrans
@@ -8,19 +11,19 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class PaymentController extends BaseController {
     private $orderModel;
+    private $productModel;
     private $midtransConfig;
 
     public function __construct() {
         parent::__construct();
         $this->orderModel = new Order($this->pdo);
-        
-        // Load Midtrans config
+        $this->productModel = new Product($this->pdo);
         $this->midtransConfig = require __DIR__ . '/../../config/midtrans.php';
         
-        // Set Midtrans configuration
+        // Initialize Midtrans configuration
         \Midtrans\Config::$serverKey = $this->midtransConfig['server_key'];
         \Midtrans\Config::$isProduction = $this->midtransConfig['is_production'];
-        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$isSanitized = $this->midtransConfig['is_sanitized'];
         \Midtrans\Config::$is3ds = $this->midtransConfig['is_3ds'];
     }
 
@@ -35,9 +38,7 @@ class PaymentController extends BaseController {
             
             $orderNumber = $notification->order_id;
             $transactionStatus = $notification->transaction_status;
-            $fraudStatus = $notification->fraud_status;
-            $paymentType = $notification->payment_type;
-            $transactionId = $notification->transaction_id;
+            $fraudStatus = $notification->fraud_status ?? null;
             
             // Get order
             $order = $this->orderModel->getByOrderNumber($orderNumber);
@@ -48,46 +49,125 @@ class PaymentController extends BaseController {
                 exit;
             }
             
-            // Log notification
-            error_log('Midtrans Notification: ' . json_encode([
-                'order_number' => $orderNumber,
-                'transaction_status' => $transactionStatus,
-                'payment_type' => $paymentType,
-                'transaction_id' => $transactionId
-            ]));
+            // Prepare complete Midtrans data array
+            $midtransData = [
+                'transaction_id' => $notification->transaction_id ?? null,
+                'order_id' => $notification->order_id ?? null,
+                'payment_type' => $notification->payment_type ?? null,
+                'transaction_status' => $notification->transaction_status ?? null,
+                'fraud_status' => $notification->fraud_status ?? null,
+                'transaction_time' => $notification->transaction_time ?? null,
+                'settlement_time' => $notification->settlement_time ?? null,
+                'gross_amount' => $notification->gross_amount ?? null,
+                'currency' => $notification->currency ?? 'IDR',
+                'signature_key' => $notification->signature_key ?? null,
+                'status_code' => $notification->status_code ?? null,
+                'status_message' => $notification->status_message ?? null,
+            ];
             
-            // Process based on transaction status
+            // Add bank info if available
+            if (isset($notification->bank)) {
+                $midtransData['bank'] = $notification->bank;
+            }
+            
+            // Add VA number if available
+            if (isset($notification->va_numbers)) {
+                $midtransData['va_numbers'] = $notification->va_numbers;
+            }
+            
+            // Add payment code if available (Indomaret, Alfamart)
+            if (isset($notification->payment_code)) {
+                $midtransData['payment_code'] = $notification->payment_code;
+            }
+            
+            // Add store if available
+            if (isset($notification->store)) {
+                $midtransData['store'] = $notification->store;
+            }
+            
+            // Add bill key and biller code (Mandiri Bill)
+            if (isset($notification->bill_key)) {
+                $midtransData['bill_key'] = $notification->bill_key;
+            }
+            if (isset($notification->biller_code)) {
+                $midtransData['biller_code'] = $notification->biller_code;
+            }
+            
+            // Add PDF URL if available
+            if (isset($notification->pdf_url)) {
+                $midtransData['pdf_url'] = $notification->pdf_url;
+            }
+            
+            // Add finish redirect URL
+            if (isset($notification->finish_redirect_url)) {
+                $midtransData['finish_redirect_url'] = $notification->finish_redirect_url;
+            }
+            
+            // Add expiry time
+            if (isset($notification->expiry_time)) {
+                $midtransData['expiry_time'] = $notification->expiry_time;
+            }
+            
+            // Log notification
+            error_log('Midtrans Notification: ' . json_encode($midtransData));
+            
+            // Determine payment status based on transaction status
+            $paymentStatus = 'pending';
+            
             if ($transactionStatus == 'capture') {
                 // For credit card transaction
                 if ($fraudStatus == 'accept') {
-                    $this->orderModel->updatePaymentStatus($orderNumber, 'paid', $transactionId, $paymentType);
+                    $paymentStatus = 'paid';
                 } else if ($fraudStatus == 'challenge') {
-                    $this->orderModel->updatePaymentStatus($orderNumber, 'pending', $transactionId, $paymentType);
+                    $paymentStatus = 'pending';
                 }
             } else if ($transactionStatus == 'settlement') {
                 // Payment success
-                $this->orderModel->updatePaymentStatus($orderNumber, 'paid', $transactionId, $paymentType);
+                $paymentStatus = 'paid';
             } else if ($transactionStatus == 'pending') {
-                // Waiting for payment (VA, etc)
-                $this->orderModel->updatePaymentStatus($orderNumber, 'pending', $transactionId, $paymentType);
+                // Waiting for payment (VA, convenience store, etc)
+                $paymentStatus = 'pending';
             } else if ($transactionStatus == 'deny') {
                 // Payment denied
-                $this->orderModel->updatePaymentStatus($orderNumber, 'failed', $transactionId, $paymentType);
+                $paymentStatus = 'failed';
             } else if ($transactionStatus == 'expire') {
                 // Payment expired
-                $this->orderModel->updatePaymentStatus($orderNumber, 'expired', $transactionId, $paymentType);
+                $paymentStatus = 'expired';
             } else if ($transactionStatus == 'cancel') {
                 // Payment cancelled
-                $this->orderModel->updatePaymentStatus($orderNumber, 'cancelled', $transactionId, $paymentType);
+                $paymentStatus = 'cancelled';
+            }
+            
+            // Update order with complete Midtrans data
+            $this->orderModel->updatePaymentStatus($orderNumber, $paymentStatus, $midtransData);
+            
+            // ✅ NEW: Reduce product stock when payment is successful
+            if ($paymentStatus === 'paid') {
+                $this->reduceProductStock($orderNumber);
+                
+                // Send payment success email (Week 4 Day 19)
+                try {
+                    $order = $this->orderModel->getOrderWithItems($orderNumber);
+                    if ($order) {
+                        $mailService = new MailService();
+                        $mailService->sendPaymentSuccess($order);
+                    }
+                } catch (Exception $e) {
+                    error_log("Failed to send payment success email: " . $e->getMessage());
+                }
             }
             
             http_response_code(200);
-            echo json_encode(['message' => 'Notification processed']);
+            echo json_encode([
+                'message' => 'Notification processed',
+                'order_number' => $orderNumber,
+                'payment_status' => $paymentStatus
+            ]);
             
         } catch (Exception $e) {
             error_log('Payment callback error: ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['message' => 'Internal server error']);
+            echo json_encode(['message' => 'Internal server error', 'error' => $e->getMessage()]);
         }
     }
 
@@ -233,6 +313,51 @@ class PaymentController extends BaseController {
                 'payment_status' => $order['payment_status'],
                 'order_status' => $order['status']
             ]);
+        }
+    }
+    
+    /**
+     * ✅ NEW: Reduce product stock after successful payment
+     * Called from Midtrans callback when payment_status = 'paid'
+     * 
+     * @param string $orderNumber
+     */
+    private function reduceProductStock($orderNumber)
+    {
+        try {
+            // Get order items
+            $stmt = $this->pdo->prepare("
+                SELECT product_id, quantity 
+                FROM order_items 
+                WHERE order_number = :order_number
+            ");
+            $stmt->execute(['order_number' => $orderNumber]);
+            $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Reduce stock for each product
+            foreach ($orderItems as $item) {
+                $updateStmt = $this->pdo->prepare("
+                    UPDATE products 
+                    SET stock = stock - :quantity 
+                    WHERE id = :product_id 
+                    AND stock >= :quantity
+                ");
+                
+                $success = $updateStmt->execute([
+                    'quantity' => $item['quantity'],
+                    'product_id' => $item['product_id']
+                ]);
+                
+                if ($success) {
+                    error_log("Stock reduced: Product #{$item['product_id']} by {$item['quantity']} units");
+                } else {
+                    error_log("Stock reduction failed: Product #{$item['product_id']} - insufficient stock");
+                }
+            }
+            
+        } catch (Exception $e) {
+            error_log("Stock reduction error for order {$orderNumber}: " . $e->getMessage());
+            // Don't throw - payment already successful, just log the error
         }
     }
 }

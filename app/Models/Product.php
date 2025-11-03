@@ -83,10 +83,7 @@ class Product
     }
     
     /**
-     * Get product by ID
-     * 
-     * @param int $id Product ID
-     * @return array|false Product data or false if not found
+     * Get single product by ID
      */
     public function getById($id)
     {
@@ -95,15 +92,37 @@ class Product
                     FROM products p 
                     LEFT JOIN categories c ON p.category_id = c.id 
                     WHERE p.id = ? LIMIT 1";
+            
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$id]);
             
-            $product = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $product ?: false;
+            return $stmt->fetch(PDO::FETCH_ASSOC);
             
         } catch (PDOException $e) {
             error_log("Get product by ID error: " . $e->getMessage());
-            return false;
+            return null;
+        }
+    }
+    
+    /**
+     * ✅ NEW: Get single product by SLUG (SEO-friendly)
+     */
+    public function getBySlug($slug)
+    {
+        try {
+            $sql = "SELECT p.*, c.name as category_name, c.slug as category_slug 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    WHERE p.slug = ? LIMIT 1";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$slug]);
+            
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+            
+        } catch (PDOException $e) {
+            error_log("Get product by slug error: " . $e->getMessage());
+            return null;
         }
     }
     
@@ -116,12 +135,13 @@ class Product
     public function create($data)
     {
         try {
-            $sql = "INSERT INTO products (name, description, price, stock, category_id, image, created_at) 
-                    VALUES (?, ?, ?, ?, ?, ?, NOW())";
+            $sql = "INSERT INTO products (name, slug, description, price, stock, category_id, image, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
             
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $data['name'],
+                $data['slug'],
                 $data['description'] ?? null,
                 $data['price'],
                 $data['stock'] ?? 0,
@@ -154,6 +174,11 @@ class Product
             if (isset($data['name'])) {
                 $fields[] = "name = ?";
                 $values[] = $data['name'];
+            }
+            
+            if (isset($data['slug'])) {
+                $fields[] = "slug = ?";
+                $values[] = $data['slug'];
             }
             
             if (isset($data['description'])) {
@@ -346,7 +371,7 @@ class Product
      * @param int $qty Required quantity
      * @return bool True if sufficient stock available
      */
-    public function hasStock($id, $qty)
+    public function hasStock($id, $qty = 1)
     {
         $product = $this->getById($id);
         
@@ -355,5 +380,44 @@ class Product
         }
         
         return $product['stock'] >= $qty;
+    }
+    
+    /**
+     * Update product rating based on reviews
+     * Auto-calculates average from product_reviews table
+     * 
+     * @param int $productId Product ID
+     * @return bool Success status
+     */
+    public function updateRating($productId)
+    {
+        try {
+            // Calculate average rating from reviews
+            $stmt = $this->pdo->prepare("
+                SELECT ROUND(AVG(rating), 1) as avg_rating
+                FROM product_reviews
+                WHERE product_id = :product_id
+            ");
+            $stmt->execute(['product_id' => $productId]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            $avgRating = $result['avg_rating'] ?? 0;
+            
+            // Update product rating
+            $updateStmt = $this->pdo->prepare("
+                UPDATE products 
+                SET rating = :rating 
+                WHERE id = :id
+            ");
+            
+            return $updateStmt->execute([
+                'rating' => $avgRating,
+                'id' => $productId
+            ]);
+            
+        } catch (PDOException $e) {
+            error_log("Update product rating error: " . $e->getMessage());
+            return false;
+        }
     }
 }

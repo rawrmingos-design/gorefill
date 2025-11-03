@@ -314,6 +314,7 @@ class CartController extends BaseController
             if ($product) {
                 $cartItems[] = [
                     'id' => $product['id'],
+                    'slug' => $product['slug'], // ✅ Include slug for SEO-friendly links
                     'name' => $product['name'],
                     'image' => $product['image'],
                     'price' => $item['price'],

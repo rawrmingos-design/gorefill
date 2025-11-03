@@ -10,6 +10,7 @@
  */
 
 require_once __DIR__ . '/../Models/User.php';
+require_once __DIR__ . '/../Services/MailService.php';
 require_once __DIR__ . '/BaseController.php';
 
 class AuthController extends BaseController
@@ -110,6 +111,15 @@ class AuthController extends BaseController
         $_SESSION['email'] = $user['email'];
         $_SESSION['phone'] = $user['phone'] ?? null;
         $_SESSION['created_at'] = $user['created_at'] ?? null;
+        
+        // Send welcome email (Week 4 Day 19)
+        try {
+            $mailService = new MailService();
+            $mailService->sendWelcomeEmail($user);
+        } catch (Exception $e) {
+            // Log error but don't fail registration
+            error_log("Failed to send welcome email: " . $e->getMessage());
+        }
         
         // Set flash message
         $this->flash('success', 'Registration successful! Welcome to GoRefill.');

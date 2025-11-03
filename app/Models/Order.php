@@ -17,15 +17,20 @@ class Order {
      * @param float $discountAmount
      * @param float $total
      * @param array $items - Cart items with product details
-     * @param array $shippingInfo - Address snapshot
+     * @param array $address - Address snapshot
      * @return string Order number
      */
-    public function create($userId, $addressId, $voucherId, $subtotal, $discountAmount, $total, $items, $shippingInfo) {
+    public function create($userId, $addressId, $voucherId, $subtotal, $discountAmount, $total, $items, $address) {
         try {
             $this->pdo->beginTransaction();
             
             // Generate order number: ORD-YYYYMMDD-XXXX
             $orderNumber = $this->generateOrderNumber();
+            
+            // Get user info for customer_email and customer_phone
+            $stmtUser = $this->pdo->prepare("SELECT email, phone FROM users WHERE id = :user_id");
+            $stmtUser->execute(['user_id' => $userId]);
+            $userInfo = $stmtUser->fetch(PDO::FETCH_ASSOC);
             
             // Insert order
             $stmt = $this->pdo->prepare("
@@ -34,12 +39,16 @@ class Order {
                     subtotal, discount_amount, total,
                     shipping_name, shipping_phone, shipping_address, 
                     shipping_city, shipping_postal_code,
+                    shipping_latitude, shipping_longitude,
+                    customer_email, customer_phone,
                     payment_status, status
                 ) VALUES (
                     :order_number, :user_id, :address_id, :voucher_id,
                     :subtotal, :discount_amount, :total,
                     :shipping_name, :shipping_phone, :shipping_address,
                     :shipping_city, :shipping_postal_code,
+                    :shipping_latitude, :shipping_longitude,
+                    :customer_email, :customer_phone,
                     'pending', 'pending'
                 )
             ");
@@ -52,11 +61,15 @@ class Order {
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
                 'total' => $total,
-                'shipping_name' => $shippingInfo['recipient_name'] ?? $shippingInfo['label'],
-                'shipping_phone' => $shippingInfo['phone'] ?? '-',
-                'shipping_address' => $shippingInfo['street'] . ($shippingInfo['village'] ? ', ' . $shippingInfo['village'] : '') . ($shippingInfo['district'] ? ', ' . $shippingInfo['district'] : ''),
-                'shipping_city' => $shippingInfo['regency'] ?? $shippingInfo['city'] ?? '',
-                'shipping_postal_code' => $shippingInfo['postal_code'] ?? ''
+                'shipping_name' => $address['label'],
+                'shipping_phone' => $address['phone'] ?? '-',
+                'shipping_address' => $address['street'] . ($address['village'] ? ', ' . $address['village'] : '') . ($address['district'] ? ', ' . $address['district'] : ''),
+                'shipping_city' => $address['regency'] ?? $address['city'] ?? '',
+                'shipping_postal_code' => $address['postal_code'] ?? '',
+                'shipping_latitude' => $address['lat'] ?? null,
+                'shipping_longitude' => $address['lng'] ?? null,
+                'customer_email' => $userInfo['email'] ?? null,
+                'customer_phone' => $userInfo['phone'] ?? null
             ]);
             
             $orderId = $this->pdo->lastInsertId();
@@ -97,31 +110,38 @@ class Order {
 
     /**
      * Generate unique order number
-     * Format: ORD-YYYYMMDD-XXXX
+     * Format: ORD-YYYYMMDD-HHMMSS-RND (100% unique with timestamp + random)
+     * 
+     * ✅ FIX: Added timestamp + random to prevent Midtrans "order_id sudah digunakan" error
+     * This ensures order_number is always unique even if:
+     * - Order created but Midtrans token generation failed
+     * - User retries checkout
+     * - Race condition occurs
      */
     private function generateOrderNumber() {
+        // Format: ORD-20251028-143052-A3F9
+        // - YYYYMMDD: Date
+        // - HHMMSS: Time (second precision)
+        // - RND: 4 random alphanumeric chars
+        
         $date = date('Ymd');
-        $prefix = 'ORD-' . $date . '-';
+        $time = date('His'); // Hour, Minute, Second
+        $random = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 4)); // 4 random chars
         
-        // Get last order number for today
-        $stmt = $this->pdo->prepare("
-            SELECT order_number FROM orders 
-            WHERE order_number LIKE :prefix 
-            ORDER BY order_number DESC 
-            LIMIT 1
-        ");
-        $stmt->execute(['prefix' => $prefix . '%']);
-        $lastOrder = $stmt->fetch(PDO::FETCH_ASSOC);
+        $orderNumber = "ORD-{$date}-{$time}-{$random}";
         
-        if ($lastOrder) {
-            // Extract sequence number and increment
-            $lastSequence = (int) substr($lastOrder['order_number'], -4);
-            $newSequence = $lastSequence + 1;
-        } else {
-            $newSequence = 1;
+        // Extra safety: Check if order_number already exists (extremely unlikely)
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) as count FROM orders WHERE order_number = :order_number");
+        $stmt->execute(['order_number' => $orderNumber]);
+        $exists = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        // If somehow exists (1 in billion chance), regenerate with new random
+        if ($exists > 0) {
+            usleep(100000); // Wait 100ms to get different timestamp
+            return $this->generateOrderNumber(); // Recursive call
         }
         
-        return $prefix . str_pad($newSequence, 4, '0', STR_PAD_LEFT);
+        return $orderNumber;
     }
 
     /**
@@ -140,21 +160,119 @@ class Order {
     }
 
     /**
-     * Update payment status
+     * Update payment status with Midtrans notification data
+     * 
+     * @param string $orderNumber
+     * @param string $status - payment_status (paid, pending, failed, etc)
+     * @param array $midtransData - Complete Midtrans notification data
+     * @return bool
      */
-    public function updatePaymentStatus($orderNumber, $status, $transactionId = null, $paymentMethod = null) {
+    public function updatePaymentStatus($orderNumber, $status, $midtransData = []) {
         $sql = "
             UPDATE orders 
-            SET payment_status = :status,
-                transaction_id = :transaction_id,
-                payment_method = :payment_method";
+            SET payment_status = :status";
         
         $params = [
             'status' => $status,
-            'transaction_id' => $transactionId,
-            'payment_method' => $paymentMethod,
             'order_number' => $orderNumber
         ];
+        
+        // Add Midtrans fields if provided
+        if (!empty($midtransData['transaction_id'])) {
+            $sql .= ", transaction_id = :transaction_id";
+            $params['transaction_id'] = $midtransData['transaction_id'];
+        }
+        
+        if (!empty($midtransData['payment_type'])) {
+            $sql .= ", payment_type = :payment_type, payment_method = :payment_method";
+            $params['payment_type'] = $midtransData['payment_type'];
+            $params['payment_method'] = $midtransData['payment_type']; // Same for backward compatibility
+        }
+        
+        if (!empty($midtransData['transaction_status'])) {
+            $sql .= ", transaction_status = :transaction_status, midtrans_status = :midtrans_status";
+            $params['transaction_status'] = $midtransData['transaction_status'];
+            $params['midtrans_status'] = $midtransData['transaction_status'];
+        }
+        
+        if (!empty($midtransData['fraud_status'])) {
+            $sql .= ", fraud_status = :fraud_status";
+            $params['fraud_status'] = $midtransData['fraud_status'];
+        }
+        
+        if (!empty($midtransData['transaction_time'])) {
+            $sql .= ", transaction_time = :transaction_time";
+            $params['transaction_time'] = $midtransData['transaction_time'];
+        }
+        
+        if (!empty($midtransData['settlement_time'])) {
+            $sql .= ", settlement_time = :settlement_time";
+            $params['settlement_time'] = $midtransData['settlement_time'];
+        }
+        
+        if (!empty($midtransData['gross_amount'])) {
+            $sql .= ", gross_amount = :gross_amount";
+            $params['gross_amount'] = $midtransData['gross_amount'];
+        }
+        
+        if (!empty($midtransData['currency'])) {
+            $sql .= ", currency = :currency";
+            $params['currency'] = $midtransData['currency'];
+        }
+        
+        if (!empty($midtransData['signature_key'])) {
+            $sql .= ", signature_key = :signature_key";
+            $params['signature_key'] = $midtransData['signature_key'];
+        }
+        
+        if (!empty($midtransData['bank'])) {
+            $sql .= ", bank = :bank";
+            $params['bank'] = $midtransData['bank'];
+        }
+        
+        if (!empty($midtransData['va_numbers'])) {
+            $sql .= ", va_number = :va_number";
+            $params['va_number'] = $midtransData['va_numbers'][0]['va_number'] ?? null;
+        }
+        
+        if (!empty($midtransData['bill_key'])) {
+            $sql .= ", bill_key = :bill_key";
+            $params['bill_key'] = $midtransData['bill_key'];
+        }
+        
+        if (!empty($midtransData['biller_code'])) {
+            $sql .= ", biller_code = :biller_code";
+            $params['biller_code'] = $midtransData['biller_code'];
+        }
+        
+        if (!empty($midtransData['pdf_url'])) {
+            $sql .= ", pdf_url = :pdf_url";
+            $params['pdf_url'] = $midtransData['pdf_url'];
+        }
+        
+        if (!empty($midtransData['finish_redirect_url'])) {
+            $sql .= ", finish_redirect_url = :finish_redirect_url";
+            $params['finish_redirect_url'] = $midtransData['finish_redirect_url'];
+        }
+        
+        if (!empty($midtransData['expiry_time'])) {
+            $sql .= ", expiry_time = :expiry_time";
+            $params['expiry_time'] = $midtransData['expiry_time'];
+        }
+        
+        if (!empty($midtransData['store'])) {
+            $sql .= ", store = :store";
+            $params['store'] = $midtransData['store'];
+        }
+        
+        if (!empty($midtransData['payment_code'])) {
+            $sql .= ", payment_code = :payment_code";
+            $params['payment_code'] = $midtransData['payment_code'];
+        }
+        
+        // Save complete callback data as JSON
+        $sql .= ", callback_data = :callback_data";
+        $params['callback_data'] = json_encode($midtransData);
         
         // If status is paid, set paid_at and change order status
         if ($status === 'paid') {

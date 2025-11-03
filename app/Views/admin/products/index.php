@@ -93,7 +93,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"><?php echo e($product['category_name']); ?></span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap font-semibold">Rp <?php echo number_format($product['price'], 0, ',', '.'); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap font-semibold">Rp <?php echo number_format($product['price'] ?? 0, 0, ',', '.'); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="font-semibold <?php echo $product['stock'] > 10 ? 'text-green-600' : ($product['stock'] > 0 ? 'text-orange-600' : 'text-red-600'); ?>">
                                             <?php echo e($product['stock']); ?>
@@ -169,6 +169,9 @@
             <?php endif; ?>
         </div>
     </div>
+
+    <?php require_once __DIR__ . "/../partials/footer.php"; ?>
+
 
     <script>
     async function deleteProduct(id) {

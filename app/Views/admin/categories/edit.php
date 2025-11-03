@@ -125,12 +125,8 @@
 
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white shadow-lg mt-12">
-        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
-            <p>&copy; 2025 GoRefill Admin. All rights reserved.</p>
-        </div>
-    </footer>
+        <?php require_once __DIR__ . "/../partials/footer.php"; ?>
+
 
 </body>
 </html>

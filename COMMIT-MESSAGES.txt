@@ -1,0 +1,210 @@
+==========================================================
+📋 GIT COMMIT MESSAGES FOR WEEK 4
+==========================================================
+
+Choose one of these commit messages based on your preference:
+
+==========================================================
+OPTION 1: COMPREHENSIVE (Recommended)
+==========================================================
+
+feat: Week 4 Complete - Voucher System, Analytics Dashboard & Email Notifications
+
+✨ New Features:
+- Complete voucher/discount code system with admin management
+- Analytics dashboard with Chart.js visualizations
+- Sales reports with date range filtering & CSV export
+- Email notifications (PHPMailer) for all user events
+- 6 responsive HTML email templates
+
+🎨 Voucher System:
+- Percentage & fixed discount types
+- Min purchase requirements
+- Usage limits & expiry dates
+- User voucher history
+- Available vouchers at checkout
+- Admin CRUD operations
+
+📊 Analytics Dashboard:
+- Real-time revenue stats (today/week/month)
+- Sales trend line charts (7 days)
+- Category performance pie charts
+- Order status distribution
+- Top 5/20 products ranking
+- CSV export (sales & products)
+
+📧 Email Notifications:
+- Welcome email on registration
+- Order confirmation with details
+- Payment success notification
+- Shipping & delivery emails (templates ready)
+- Password reset (template ready)
+- PHPMailer integration with Gmail support
+
+🐛 Bug Fixes:
+- Fixed null coalescing errors (PHP 8 compatibility)
+- Fixed undefined array key warnings in views
+- Fixed number_format() null parameter deprecation
+
+📝 Documentation:
+- Updated README.md with complete setup guide
+- Added WEEK4-DAY17-VOUCHER-MANAGEMENT.md
+- Added WEEK4-DAY18-ANALYTICS-DASHBOARD.md
+- Added WEEK4-DAY19-EMAIL-NOTIFICATIONS.md
+- Added NULL-COALESCING-FIX.md
+- Added test-email.php script
+
+🔧 Technical Improvements:
+- Analytics.php model with 10+ statistics methods
+- MailService.php for email abstraction
+- Enhanced AdminController with reports & export
+- Null coalescing operators throughout views
+- config/mail.php for SMTP settings
+
+📦 Dependencies:
+- Added PHPMailer (v7.0+) via Composer
+- Added Chart.js (v4.x) via CDN
+
+==========================================================
+OPTION 2: SHORT & SWEET
+==========================================================
+
+feat: implement voucher system, analytics dashboard, and email notifications
+
+Added complete voucher management, analytics with Chart.js visualizations, 
+sales reports with CSV export, and PHPMailer email notifications for all 
+user events. Fixed PHP 8 compatibility issues and updated documentation.
+
+Week 4 Features (Days 17-19):
+- Voucher/discount code system
+- Analytics dashboard with reports
+- Email notifications (6 templates)
+- Bug fixes & documentation updates
+
+==========================================================
+OPTION 3: BULLET POINTS
+==========================================================
+
+feat: Week 4 - Advanced E-Commerce Features
+
+• Voucher System
+  - Admin CRUD with usage tracking
+  - Percentage/fixed discounts
+  - Expiry dates & usage limits
+  
+• Analytics Dashboard
+  - Chart.js visualizations
+  - Sales reports & CSV export
+  - Top products ranking
+  
+• Email Notifications
+  - PHPMailer integration
+  - 6 HTML email templates
+  - SMTP configuration
+  
+• Bug Fixes & Improvements
+  - PHP 8 null coalescing fixes
+  - Updated documentation
+  - Test scripts added
+
+==========================================================
+OPTION 4: SINGLE LINE (For small commits)
+==========================================================
+
+feat: add voucher system, analytics dashboard, and email notifications with PHPMailer
+
+==========================================================
+OPTION 5: CONVENTIONAL COMMIT (Detailed)
+==========================================================
+
+feat(week4): implement voucher management, analytics & email notifications
+
+BREAKING CHANGE: None
+
+Features:
+- Voucher system with admin management (Day 17)
+- Analytics dashboard with Chart.js (Day 18)
+- Email notifications via PHPMailer (Day 19)
+
+Bug Fixes:
+- Fixed PHP 8 null coalescing warnings
+- Fixed undefined array key errors
+
+Documentation:
+- Updated README.md with complete guide
+- Added detailed documentation for each feature
+- Added test scripts
+
+Dependencies:
+- PHPMailer 7.0+
+- Chart.js 4.x
+
+==========================================================
+RECOMMENDED GIT COMMANDS
+==========================================================
+
+# Check status
+git status
+
+# Stage all changes
+git add .
+
+# Commit with message (copy from above)
+git commit -m "YOUR_CHOSEN_MESSAGE_HERE"
+
+# Push to GitHub
+git push origin main
+
+# Or if using different branch:
+git push origin your-branch-name
+
+==========================================================
+ALTERNATIVE: MULTIPLE COMMITS (If you prefer smaller commits)
+==========================================================
+
+# Commit 1: Voucher System
+git add app/Models/Voucher.php app/Controllers/AdminController.php app/Views/admin/vouchers/
+git commit -m "feat: implement voucher management system with admin CRUD"
+
+# Commit 2: Analytics Dashboard
+git add app/Models/Analytics.php app/Views/admin/dashboard.php app/Views/admin/reports.php
+git commit -m "feat: add analytics dashboard with Chart.js visualizations and reports"
+
+# Commit 3: Email Notifications
+git add app/Services/MailService.php app/Views/emails/ config/mail.php
+git commit -m "feat: integrate PHPMailer for email notifications"
+
+# Commit 4: Bug Fixes
+git add app/Views/
+git commit -m "fix: add null coalescing operators for PHP 8 compatibility"
+
+# Commit 5: Documentation
+git add README.md *.md test-email.php
+git commit -m "docs: update README and add Week 4 documentation"
+
+# Push all commits
+git push origin main
+
+==========================================================
+QUICK COPY-PASTE (RECOMMENDED)
+==========================================================
+
+git add .
+git commit -m "feat: Week 4 Complete - Voucher System, Analytics Dashboard & Email Notifications
+
+✨ New Features:
+- Complete voucher/discount code system with admin management
+- Analytics dashboard with Chart.js visualizations
+- Sales reports with date range filtering & CSV export
+- Email notifications (PHPMailer) for all user events
+- 6 responsive HTML email templates
+
+📊 Analytics: Real-time stats, charts, CSV export
+📧 Emails: Welcome, order, payment, shipping, delivery
+🐛 Fixes: PHP 8 null coalescing compatibility
+📝 Docs: Complete README & feature documentation
+
+Week 4 Days 17-19 complete."
+git push origin main
+
+==========================================================

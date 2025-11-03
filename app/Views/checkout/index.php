@@ -96,6 +96,7 @@
                     </div>
                 </div>
 
+
                 <!-- Section 2: Address Selection -->
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex justify-between items-center mb-4">
@@ -174,6 +175,36 @@
                         <i class="fas fa-ticket-alt mr-2 text-green-600"></i>
                         Kode Voucher
                     </h2>
+                    
+                    <!-- Available Vouchers (Week 4 Day 17) -->
+                    <?php if (!empty($availableVouchers)): ?>
+                        <div class="mb-4 bg-gradient-to-r from-blue-50 to-green-50 border border-green-200 rounded-lg p-4">
+                            <p class="font-semibold text-green-800 mb-3 flex items-center">
+                                <i class="fas fa-gift mr-2"></i>
+                                Voucher Tersedia untuk Anda!
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <?php foreach ($availableVouchers as $voucher): ?>
+                                    <div class="bg-white border border-green-300 rounded-lg p-3 cursor-pointer hover:shadow-md transition" 
+                                         onclick="document.getElementById('voucherCode').value='<?= e($voucher['code']) ?>'; applyVoucher();">
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <p class="font-bold text-blue-600 text-sm"><?= e($voucher['code']) ?></p>
+                                                <p class="text-xs text-gray-600">Diskon <?= $voucher['discount_percent'] ?>%</p>
+                                                <?php if ($voucher['min_purchase'] > 0): ?>
+                                                    <p class="text-xs text-gray-500">Min: Rp <?= number_format($voucher['min_purchase'], 0, ',', '.') ?></p>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-lg font-bold text-green-600">-Rp<?= number_format($voucher['calculated_discount'], 0, ',', '.') ?></p>
+                                                <button class="text-xs text-blue-600 hover:underline">Gunakan</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                     
                     <div id="voucherInputSection" class="<?= $voucherInfo ? 'hidden' : '' ?>">
                         <div class="flex gap-2">
@@ -278,10 +309,10 @@
                         </div>
                     </div>
 
-                    <button onclick="proceedToPayment()" 
-                            class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    <button id="checkoutButton" onclick="proceedToPayment()" 
+                            class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed">
                         <i class="fas fa-lock mr-2"></i>
-                        Lanjutkan ke Pembayaran
+                        <span id="checkoutButtonText">Lanjutkan ke Pembayaran</span>
                     </button>
 
                     <p class="text-xs text-gray-500 text-center mt-3">
@@ -432,12 +463,7 @@
         </div>
     </div>
     
-    <!-- Footer -->
-    <footer class="bg-white shadow-lg mt-12">
-        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
-            <p>&copy; 2025 GoRefill. All rights reserved.</p>
-        </div>
-    </footer>
+    <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
     <script src="public/assets/js/cart.js"></script>
     <script src="/public/assets/js/maps.js"></script>
@@ -558,18 +584,38 @@
             });
         });
 
+        // Prevent multiple simultaneous checkout requests
+        let isProcessingCheckout = false;
+        
         // Proceed to payment
         function proceedToPayment() {
             <?php if (empty($addresses)): ?>
                 Swal.fire('Perhatian', 'Silakan tambahkan alamat pengiriman terlebih dahulu', 'warning');
                 return;
             <?php endif; ?>
+            
+            // ✅ FIX: Prevent race condition - Check if already processing
+            if (isProcessingCheckout) {
+                console.warn('⚠️ Checkout already in progress, ignoring duplicate request');
+                return;
+            }
+            
+            // ✅ FIX: Set processing flag
+            isProcessingCheckout = true;
+            
+            // ✅ FIX: Disable button immediately
+            const checkoutButton = document.getElementById('checkoutButton');
+            const checkoutButtonText = document.getElementById('checkoutButtonText');
+            checkoutButton.disabled = true;
+            checkoutButtonText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
 
             // Show loading
             Swal.fire({
-                title: 'Memproses...',
-                text: 'Mohon tunggu sebentar',
+                title: 'Memproses Checkout...',
+                text: 'Mohon tunggu, jangan refresh halaman',
                 allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
                 didOpen: () => {
                     Swal.showLoading();
                 }
@@ -621,6 +667,11 @@
                 Swal.close();
                 console.error('Checkout error:', error);
                 Swal.fire('Error', 'Terjadi kesalahan saat memproses checkout', 'error');
+                
+                // ✅ FIX: Re-enable button on error
+                isProcessingCheckout = false;
+                checkoutButton.disabled = false;
+                checkoutButtonText.innerHTML = 'Lanjutkan ke Pembayaran';
             });
         }
 

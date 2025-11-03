@@ -103,6 +103,9 @@
         </div>
     </div>
 
+    <?php require_once __DIR__ . "/../partials/footer.php"; ?>
+
+
     <script>
     document.getElementById('productForm').addEventListener('submit', async (e) => {
         e.preventDefault();

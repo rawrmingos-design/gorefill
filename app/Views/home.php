@@ -96,7 +96,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 <?php foreach (array_slice($featuredProducts, 0, 4) as $product): ?>
                     <div class="bg-white rounded-xl shadow-md hover:shadow-2xl transition transform hover:-translate-y-2 overflow-hidden">
-                        <a href="?route=product.detail&id=<?php echo e($product['id']); ?>" class="block relative group">
+                        <a href="?route=product.detail&slug=<?php echo e($product['slug']); ?>" class="block relative group">
                             <?php
                             require_once __DIR__ . '/../Helpers/ImageHelper.php';
                             $imageUrl = ImageHelper::getImageUrl($product['image']);

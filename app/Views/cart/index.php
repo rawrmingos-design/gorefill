@@ -58,14 +58,14 @@
                                                     <img src="<?php echo e($itemImageUrl); ?>" 
                                                          alt="<?php echo e($item['name']); ?>" 
                                                          class="w-16 h-16 object-cover rounded mr-4"
-                                                         onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-16 h-16 bg-gray-200 rounded mr-4 flex items-center justify-center\'><span class=\'text-2xl\'>📦</span></div><div><a href=\'?route=product.detail&id=<?php echo e($item['id']); ?>\' class=\'font-semibold text-gray-800 hover:text-blue-600\'><?php echo e($item['name']); ?></a><p class=\'text-sm text-gray-500\'>Stock: <?php echo e($item['stock']); ?></p></div>';">
+                                                         onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-16 h-16 bg-gray-200 rounded mr-4 flex items-center justify-center\'><span class=\'text-2xl\'>📦</span></div><div><a href=\'?route=product.detail&slug=<?php echo e($item['slug'] ?? $item['id']); ?>\' class=\'font-semibold text-gray-800 hover:text-blue-600\'><?php echo e($item['name']); ?></a><p class=\'text-sm text-gray-500\'>Stock: <?php echo e($item['stock']); ?></p></div>';">
                                                 <?php else: ?>
                                                     <div class="w-16 h-16 bg-gray-200 rounded mr-4 flex items-center justify-center">
                                                         <span class="text-2xl">📦</span>
                                                     </div>
                                                 <?php endif; ?>
                                                 <div>
-                                                    <a href="?route=product.detail&id=<?php echo e($item['id']); ?>" class="font-semibold text-gray-800 hover:text-blue-600">
+                                                    <a href="?route=product.detail&slug=<?php echo e($item['slug'] ?? $item['id']); ?>" class="font-semibold text-gray-800 hover:text-blue-600">
                                                         <?php echo e($item['name']); ?>
                                                     </a>
                                                     <p class="text-sm text-gray-500">Stock: <?php echo e($item['stock']); ?></p>

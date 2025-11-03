@@ -20,6 +20,10 @@
                    class="<?= ($currentRoute ?? '') === 'admin.categories' ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50' ?> px-4 py-2 rounded-lg transition-colors">
                     <i class="fas fa-tags mr-2"></i>Kategori
                 </a>
+                <a href="index.php?route=admin.orders" 
+                   class="<?= ($currentRoute ?? '') === 'admin.orders' ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50' ?> px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-box-open mr-2"></i>Orders
+                </a>
                 <a href="index.php?route=admin.vouchers" 
                    class="<?= ($currentRoute ?? '') === 'admin.vouchers' ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50' ?> px-4 py-2 rounded-lg transition-colors">
                     <i class="fas fa-ticket-alt mr-2"></i>Voucher

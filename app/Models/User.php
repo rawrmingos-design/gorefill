@@ -329,6 +329,27 @@ class User
     }
     
     /**
+     * Week 3 Day 14: Get all couriers for admin order assignment
+     * 
+     * @return array List of couriers
+     */
+    public function getCouriers()
+    {
+        try {
+            $sql = "SELECT id, name, email, phone 
+                    FROM users 
+                    WHERE role = 'kurir' 
+                    ORDER BY name ASC";
+            
+            $stmt = $this->pdo->query($sql);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getting couriers: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
      * Delete user (soft delete - can be extended)
      * 
      * @param int $id User ID

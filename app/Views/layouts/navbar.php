@@ -24,6 +24,9 @@
         <a href="?route=cart" class="text-gray-700 hover:text-blue-600">
           🛒 Cart <span id="cart-badge" class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">0</span>
         </a>
+        <a href="?route=favorites" class="text-gray-700 hover:text-blue-600">
+          <i class="fas fa-heart text-red-500"></i> Favorit
+        </a>
 
         <?php if (isset($_SESSION['user_id'])): ?>
           <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
@@ -38,6 +41,7 @@
               Admin Panel
             </a>
           <?php endif; ?>
+          <?php if ($_SESSION['role'] !== 'admin'): ?>
           <a href="?route=profile" class="text-gray-700 hover:text-blue-600 flex items-center">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -45,6 +49,7 @@
             </svg>
             <?php echo e($_SESSION['name']); ?>
           </a>
+          <?php endif; ?>
           <a href="?route=auth.logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</a>
         <?php else: ?>
           <a href="?route=auth.login" class="text-blue-600 hover:text-blue-800">Login</a>
@@ -61,6 +66,11 @@
       🛒 Cart <span id="cart-badge-mobile"
         class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">0</span>
     </a>
+    <?php if (isset($_SESSION['user_id'])): ?>
+      <a href="?route=favorites" class="block text-gray-700 hover:text-blue-600">
+        <i class="fas fa-heart text-red-500"></i> Favorit
+      </a>
+    <?php endif; ?>
     <?php if (isset($_SESSION['user_id'])): ?>
       <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <a href="?route=admin.dashboard"

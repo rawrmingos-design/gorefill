@@ -1,17 +1,4 @@
 <?php
-/**
- * Front Controller for GoRefill Application
- * 
- * This file serves as the entry point for all requests.
- * It implements routing using URL query parameter ?route=controller.method
- * 
- * Route Format: index.php?route=controller.method&param=value
- * Examples:
- * - index.php?route=home
- * - index.php?route=auth.login
- * - index.php?route=product.detail&id=5
- * - index.php?route=cart.add
- */
 
 // Load bootstrap (includes config, PDO, helpers, session)
 require_once __DIR__ . '/../app/bootstrap.php';
@@ -115,6 +102,12 @@ try {
             $productController->search();
             break;
             
+        case 'product.addReview':
+            require_once __DIR__ . '/../app/Controllers/ProductController.php';
+            $productController = new ProductController();
+            $productController->addReview();
+            break;
+            
         // ==================== CART ROUTES ====================
         case 'cart':
         case 'cart.view':
@@ -159,7 +152,40 @@ try {
             $cartController->clear();
             break;
             
-        // ==================== CHECKOUT ROUTES ====================
+        // ==================== FAVORITE/WISHLIST ROUTES (Week 3 Day 15) ====================
+        case 'favorites':
+        case 'favorite.index':
+            require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
+            $favoriteController = new FavoriteController();
+            $favoriteController->index();
+            break;
+            
+        case 'favorite.add':
+            require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
+            $favoriteController = new FavoriteController();
+            $favoriteController->add();
+            break;
+            
+        case 'favorite.remove':
+            require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
+            $favoriteController = new FavoriteController();
+            $favoriteController->remove();
+            break;
+            
+        case 'favorite.toggle':
+            require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
+            $favoriteController = new FavoriteController();
+            $favoriteController->toggle();
+            break;
+            
+        // ==================== USER VOUCHERS (Week 4 Day 17) ====================
+        case 'user.vouchers':
+            require_once __DIR__ . '/../app/Controllers/UserController.php';
+            $userController = new UserController();
+            $userController->vouchers();
+            break;
+            
+        // ==================== CHECKOUT & ORDERS ROUTES ====================
         case 'checkout':
         case 'checkout.index':
             require_once __DIR__ . '/../app/Controllers/CheckoutController.php';
@@ -360,6 +386,75 @@ try {
             require_once __DIR__ . '/../app/Controllers/AdminCategoryController.php';
             $categoryController = new AdminCategoryController();
             $categoryController->destroy();
+            break;
+            
+        // ==================== ADMIN ORDER ROUTES (Week 3 Day 14) ====================
+        case 'admin.orders':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->orders();
+            break;
+            
+        case 'admin.orderDetail':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->orderDetail();
+            break;
+            
+        case 'admin.assignCourier':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->assignCourier();
+            break;
+            
+        case 'admin.updateOrderStatus':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->updateOrderStatus();
+            break;
+            
+        // ==================== ADMIN VOUCHER ROUTES (Week 4 Day 17) ====================
+        case 'admin.vouchers':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->vouchers();
+            break;
+            
+        case 'admin.createVoucher':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->createVoucher();
+            break;
+            
+        case 'admin.editVoucher':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->editVoucher();
+            break;
+            
+        case 'admin.deleteVoucher':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->deleteVoucher();
+            break;
+            
+        case 'admin.voucherUsage':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->voucherUsage();
+            break;
+            
+        // ==================== ADMIN REPORTS & ANALYTICS (Week 4 Day 18) ====================
+        case 'admin.reports':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->reports();
+            break;
+            
+        case 'admin.exportReport':
+            require_once __DIR__ . '/../app/Controllers/AdminController.php';
+            $adminController = new AdminController();
+            $adminController->exportReport();
             break;
             
         // ==================== COURIER ROUTES ====================

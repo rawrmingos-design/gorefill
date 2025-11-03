@@ -11,6 +11,8 @@
 
 require_once __DIR__ . '/../Models/Product.php';
 require_once __DIR__ . '/../Models/Category.php';
+require_once __DIR__ . '/../Models/Favorite.php';
+require_once __DIR__ . '/../Models/ProductReview.php';
 require_once __DIR__ . '/BaseController.php';
 
 class ProductController extends BaseController
@@ -28,6 +30,18 @@ class ProductController extends BaseController
     private $categoryModel;
     
     /**
+     * Favorite model instance
+     * @var Favorite
+     */
+    private $favoriteModel;
+    
+    /**
+     * ProductReview model instance
+     * @var ProductReview
+     */
+    private $reviewModel;
+    
+    /**
      * Constructor
      */
     public function __construct()
@@ -35,6 +49,8 @@ class ProductController extends BaseController
         parent::__construct();
         $this->productModel = new Product($this->pdo);
         $this->categoryModel = new Category($this->pdo);
+        $this->favoriteModel = new Favorite($this->pdo);
+        $this->reviewModel = new ProductReview($this->pdo);
     }
     
     /**
@@ -83,6 +99,25 @@ class ProductController extends BaseController
         // Get all categories for filter
         $categories = $this->categoryModel->getAll();
         
+        // Get favorited product IDs for current user
+        $favoritedIds = [];
+        if (isset($_SESSION['user_id'])) {
+            $favoritedIds = $this->favoriteModel->getFavoritedProductIds($_SESSION['user_id']);
+        }
+        
+        // Get average ratings for all products
+        // Using pre-calculated rating from products table for better performance
+        $productRatings = [];
+        foreach ($products as $product) {
+            // Get review count from product_reviews table
+            $reviewCount = $this->reviewModel->getReviewCount($product['id']);
+            
+            $productRatings[$product['id']] = [
+                'average_rating' => (float) $product['rating'], // From products.rating column
+                'review_count' => $reviewCount
+            ];
+        }
+        
         $this->render('products/index', [
             'title' => 'Products - GoRefill',
             'products' => $products,
@@ -90,6 +125,8 @@ class ProductController extends BaseController
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalProducts' => $totalProducts,
+            'favoritedIds' => $favoritedIds,
+            'productRatings' => $productRatings,
             'filters' => [
                 'category' => $category,
                 'minPrice' => $minPrice,
@@ -102,18 +139,25 @@ class ProductController extends BaseController
     }
     
     /**
-     * Product Detail Page
+     * Product detail page
+     * ✅ NEW: Now supports SLUG (SEO-friendly) or ID (backward compatible)
      */
     public function detail()
     {
+        $slug = $_GET['slug'] ?? null;
         $productId = $_GET['id'] ?? null;
         
-        if (!$productId) {
+        if (!$slug && !$productId) {
             $this->flash('error', 'Product not found');
             $this->redirect('products');
         }
         
-        $product = $this->productModel->getById($productId);
+        // ✅ Try to get by slug first (SEO-friendly), fallback to ID
+        if ($slug) {
+            $product = $this->productModel->getBySlug($slug);
+        } else {
+            $product = $this->productModel->getById($productId);
+        }
         
         if (!$product) {
             $this->flash('error', 'Product not found');
@@ -124,14 +168,40 @@ class ProductController extends BaseController
         $relatedProducts = $this->productModel->getByCategory($product['category_id'], 4, 0);
         
         // Remove current product from related
-        $relatedProducts = array_filter($relatedProducts, function($p) use ($productId) {
-            return $p['id'] != $productId;
+        $relatedProducts = array_filter($relatedProducts, function($p) use ($product) {
+            return $p['id'] != $product['id'];
         });
+        
+        // Check if product is favorited by current user
+        $isFavorite = false;
+        if (isset($_SESSION['user_id'])) {
+            $isFavorite = $this->favoriteModel->exists($_SESSION['user_id'], $product['id']);
+        }
+        
+        // Get review data
+        $reviewData = $this->reviewModel->getAverageRating($product['id']);
+        $reviews = $this->reviewModel->getByProductId($product['id'], 10, 0);
+        $ratingDistribution = $this->reviewModel->getRatingDistribution($product['id']);
+        
+        // Check if user can review
+        $canReview = false;
+        $hasReviewed = false;
+        if (isset($_SESSION['user_id'])) {
+            $canReview = $this->reviewModel->canUserReview($product['id'], $_SESSION['user_id']);
+            $hasReviewed = $this->reviewModel->hasUserReviewed($product['id'], $_SESSION['user_id']);
+        }
         
         $this->render('products/detail', [
             'title' => $product['name'] . ' - GoRefill',
             'product' => $product,
-            'relatedProducts' => $relatedProducts
+            'relatedProducts' => $relatedProducts,
+            'isFavorite' => $isFavorite,
+            'averageRating' => $reviewData['average_rating'],
+            'reviewCount' => $reviewData['review_count'],
+            'reviews' => $reviews,
+            'ratingDistribution' => $ratingDistribution,
+            'canReview' => $canReview,
+            'hasReviewed' => $hasReviewed
         ]);
     }
     
@@ -291,5 +361,95 @@ class ProductController extends BaseController
             
             return true;
         });
+    }
+    
+    /**
+     * Add product review (AJAX)
+     * POST /index.php?route=product.addReview
+     */
+    public function addReview()
+    {
+        header('Content-Type: application/json');
+        
+        // Check if user is logged in
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Silakan login terlebih dahulu'
+            ]);
+            exit;
+        }
+        
+        // Get POST data
+        $input = json_decode(file_get_contents('php://input'), true);
+        $productId = $input['product_id'] ?? null;
+        $rating = $input['rating'] ?? null;
+        $review = $input['review'] ?? '';
+        
+        // Validation
+        if (!$productId) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Product ID required'
+            ]);
+            exit;
+        }
+        
+        if (!$rating || $rating < 1 || $rating > 5) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Rating harus antara 1-5 bintang'
+            ]);
+            exit;
+        }
+        
+        if (empty(trim($review))) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Review tidak boleh kosong'
+            ]);
+            exit;
+        }
+        
+        // Check if user has purchased the product
+        if (!$this->reviewModel->canUserReview($productId, $_SESSION['user_id'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Anda hanya bisa mereview produk yang sudah Anda beli'
+            ]);
+            exit;
+        }
+        
+        // Check if user has already reviewed
+        if ($this->reviewModel->hasUserReviewed($productId, $_SESSION['user_id'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Anda sudah mereview produk ini'
+            ]);
+            exit;
+        }
+        
+        // Create review
+        $reviewId = $this->reviewModel->create($productId, $_SESSION['user_id'], $rating, trim($review));
+        
+        if ($reviewId) {
+            // Update product rating in products table
+            $this->productModel->updateRating($productId);
+            
+            // Get updated average rating
+            $reviewData = $this->reviewModel->getAverageRating($productId);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Review berhasil ditambahkan! Terima kasih atas feedback Anda.',
+                'average_rating' => $reviewData['average_rating'],
+                'review_count' => $reviewData['review_count']
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gagal menambahkan review. Silakan coba lagi.'
+            ]);
+        }
     }
 }

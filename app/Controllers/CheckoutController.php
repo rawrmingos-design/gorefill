@@ -4,6 +4,7 @@ require_once __DIR__ . '/../Models/Address.php';
 require_once __DIR__ . '/../Models/Voucher.php';
 require_once __DIR__ . '/../Models/Product.php';
 require_once __DIR__ . '/../Models/Order.php';
+require_once __DIR__ . '/../Services/MailService.php';
 require_once __DIR__ . '/BaseController.php';
 
 // Autoload Midtrans
@@ -120,6 +121,8 @@ class CheckoutController extends BaseController {
             }
         }
 
+        
+
         // Get cart items with product details
         $cartItems = $this->getCartItems();
         
@@ -139,6 +142,9 @@ class CheckoutController extends BaseController {
             $defaultAddress = $this->addressModel->getDefaultByUserId($_SESSION['user_id']);
             $selectedAddressId = $defaultAddress['id'] ?? $addresses[0]['id'];
         }
+        
+        // Get available vouchers for this cart total (Week 4 Day 17)
+        $availableVouchers = $this->voucherModel->getAvailableForCheckout($subtotal);
 
         // Get applied voucher info
         $voucherDiscount = 0;
@@ -162,7 +168,8 @@ class CheckoutController extends BaseController {
             'total' => $total,
             'addresses' => $addresses,
             'selectedAddressId' => $selectedAddressId,
-            'isBuyNow' => $isBuyNow
+            'isBuyNow' => $isBuyNow,
+            'availableVouchers' => $availableVouchers
         ];
 
         $this->render('checkout/index', $data);
@@ -405,14 +412,50 @@ class CheckoutController extends BaseController {
                 exit;
             }
             
+            // ✅ FIX: Prevent duplicate checkout (race condition protection)
+            if (isset($_SESSION['checkout_processing']) && $_SESSION['checkout_processing'] === true) {
+                // Check if processing started less than 30 seconds ago (timeout protection)
+                if (isset($_SESSION['checkout_processing_time']) && (time() - $_SESSION['checkout_processing_time']) < 30) {
+                    echo json_encode([
+                        'success' => false, 
+                        'message' => 'Checkout sedang diproses, mohon tunggu...'
+                    ]);
+                    exit;
+                }
+                // If more than 30 seconds, assume previous request failed, allow retry
+                unset($_SESSION['checkout_processing']);
+                unset($_SESSION['checkout_processing_time']);
+            }
+            
+            // ✅ FIX: Set processing lock
+            $_SESSION['checkout_processing'] = true;
+            $_SESSION['checkout_processing_time'] = time();
+            
+            // ✅ FIX: Clean up abandoned pending orders (older than 15 minutes without snap_token)
+            // This prevents database clutter from failed checkout attempts
+            $cleanupStmt = $this->pdo->prepare("
+                DELETE FROM orders 
+                WHERE user_id = :user_id 
+                AND payment_status = 'pending' 
+                AND snap_token IS NULL 
+                AND created_at < DATE_SUB(NOW(), INTERVAL 15 MINUTE)
+            ");
+            $cleanupStmt->execute(['user_id' => $_SESSION['user_id']]);
+            
             // Validate cart or buy_now not empty
             if (empty($_SESSION['cart']) && empty($_SESSION['buy_now'])) {
+                // ✅ FIX: Clear lock on validation error
+                unset($_SESSION['checkout_processing']);
+                unset($_SESSION['checkout_processing_time']);
                 echo json_encode(['success' => false, 'message' => 'Keranjang belanja kosong']);
                 exit;
             }
             
             // Validate address selected
             if (empty($_SESSION['checkout']['address_id'])) {
+                // ✅ FIX: Clear lock on validation error
+                unset($_SESSION['checkout_processing']);
+                unset($_SESSION['checkout_processing_time']);
                 echo json_encode(['success' => false, 'message' => 'Silakan pilih alamat pengiriman']);
                 exit;
             }
@@ -422,6 +465,9 @@ class CheckoutController extends BaseController {
             
             // Validate cart items not empty
             if (empty($cartItems)) {
+                // ✅ FIX: Clear lock on validation error
+                unset($_SESSION['checkout_processing']);
+                unset($_SESSION['checkout_processing_time']);
                 echo json_encode(['success' => false, 'message' => 'Tidak ada produk untuk checkout']);
                 exit;
             }
@@ -434,6 +480,9 @@ class CheckoutController extends BaseController {
             
             // Validate subtotal
             if ($subtotal <= 0) {
+                // ✅ FIX: Clear lock on validation error
+                unset($_SESSION['checkout_processing']);
+                unset($_SESSION['checkout_processing_time']);
                 echo json_encode(['success' => false, 'message' => 'Total pembelian tidak valid']);
                 exit;
             }
@@ -454,6 +503,9 @@ class CheckoutController extends BaseController {
             // Get shipping address
             $address = $this->addressModel->getById($_SESSION['checkout']['address_id']);
             if (!$address) {
+                // ✅ FIX: Clear lock on validation error
+                unset($_SESSION['checkout_processing']);
+                unset($_SESSION['checkout_processing_time']);
                 echo json_encode(['success' => false, 'message' => 'Alamat tidak valid']);
                 exit;
             }
@@ -523,15 +575,32 @@ class CheckoutController extends BaseController {
             // Save snap token to order
             $this->orderModel->updateSnapToken($orderNumber, $snapToken);
             
-            // Increment voucher usage if used
-            if ($voucherId) {
-                $this->voucherModel->use($voucherId);
+            // Send order confirmation email (Week 4 Day 19)
+            try {
+                $mailService = new MailService();
+                $orderData = [
+                    'order_number' => $orderNumber,
+                    'customer_name' => $_SESSION['name'],
+                    'customer_email' => $_SESSION['email'],
+                    'total_price' => $total,
+                    'items' => $cartItems
+                ];
+                $mailService->sendOrderConfirmation($orderData);
+            } catch (Exception $e) {
+                error_log("Failed to send order confirmation email: " . $e->getMessage());
             }
             
-            // Clear cart/buy_now and checkout session
-            unset($_SESSION['cart']);
-            unset($_SESSION['buy_now']);
-            unset($_SESSION['checkout']);
+            // Clear cart or buy_now after successful checkout
+            if (isset($_SESSION['buy_now'])) {
+                unset($_SESSION['buy_now']);
+            } else {
+                unset($_SESSION['cart']);
+            }
+            unset($_SESSION['checkout']); // Clear checkout session
+            
+            // ✅ FIX: Clear processing lock after success
+            unset($_SESSION['checkout_processing']);
+            unset($_SESSION['checkout_processing_time']);
             
             echo json_encode([
                 'success' => true,
@@ -539,13 +608,17 @@ class CheckoutController extends BaseController {
                 'order_number' => $orderNumber,
                 'message' => 'Order created successfully'
             ]);
-            
+            exit;
         } catch (Exception $e) {
-            error_log('Checkout error: ' . $e->getMessage());
-            echo json_encode([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ]);
-        }
+        // ✅ FIX: Clear processing lock on exception
+        unset($_SESSION['checkout_processing']);
+        unset($_SESSION['checkout_processing_time']);
+        
+        error_log('Checkout error: ' . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+        ]);
     }
+}
 }

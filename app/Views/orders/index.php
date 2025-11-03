@@ -97,7 +97,6 @@
         <?php endif; ?>
     </div>
 
-    <!-- Footer -->
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
 </body>
 </html>

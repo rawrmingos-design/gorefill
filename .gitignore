@@ -4,7 +4,7 @@
 /vendor/
 
 # Configuration files with sensitive data
-/config/mail.php
+# /config/mail.php
 /config/midtrans.php
 .env
 
@@ -55,3 +55,8 @@ test_*.php
 
 # Composer lock file (optional, keep if want consistent dependencies)
 # composer.lock
+
+/.windsurf
+
+!/migrations/gorefill.sql
+*.sql

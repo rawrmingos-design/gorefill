@@ -176,8 +176,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <?php foreach ($products as $product): ?>
                             <div class="product-card bg-white rounded-xl shadow-md hover:shadow-2xl overflow-hidden">
-                                <!-- Product Image -->
-                                <a href="?route=product.detail&id=<?php echo e($product['id']); ?>" class="block relative group">
+                            <!-- Product Image -->
+                                <a href="?route=product.detail&slug=<?php echo e($product['slug']); ?>" class="block relative group">
                                     <?php
                                     $imageUrl = ImageHelper::getImageUrl($product['image']);
                                     if ($imageUrl): ?>
@@ -202,19 +202,36 @@
                                             <i class="fas fa-exclamation-circle mr-1"></i> Stok Terbatas
                                         </div>
                                     <?php endif; ?>
+                                    
+                                    <!-- Favorite Button -->
+                                    <?php
+                                    $isFavorited = in_array($product['id'], $favoritedIds);
+                                    ?>
+                                    <button 
+                                        onclick="toggleFavorite(<?php echo $product['id']; ?>)"
+                                        data-product-id="<?php echo $product['id']; ?>"
+                                        class="absolute top-3 left-3 bg-white hover:bg-gray-50 text-gray-700 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition z-10"
+                                        title="<?php echo $isFavorited ? 'Hapus dari favorit' : 'Tambah ke favorit'; ?>">
+                                        <i class="<?php echo $isFavorited ? 'fas fa-heart text-red-500' : 'far fa-heart'; ?> text-lg"></i>
+                                    </button>
                                 </a>
                                 
                                 <!-- Product Info -->
                                 <div class="p-5">
-                                    <!-- Category Badge -->
-                                    <div class="mb-3">
+                                    <!-- Category & Eco Badge -->
+                                    <div class="mb-3 flex items-center gap-2 flex-wrap">
                                         <span class="inline-block px-3 py-1 text-xs bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-semibold">
                                             <i class="fas fa-tag mr-1"></i> <?php echo e($product['category_name'] ?? 'Umum'); ?>
                                         </span>
+                                        <?php if ($product['badge_env'] == 1): ?>
+                                            <span class="inline-block px-3 py-1 text-xs bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full font-semibold animate-pulse">
+                                                <i class="fa-solid fa-recycle mr-1"></i> Ramah Lingkungan
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
                                     
                                     <!-- Product Name -->
-                                    <a href="?route=product.detail&id=<?php echo e($product['id']); ?>" class="block">
+                                    <a href="?route=product.detail&slug=<?php echo e($product['slug']); ?>" class="block">
                                         <h3 class="font-bold text-gray-800 text-xl mb-2 hover:text-blue-600 transition line-clamp-2 min-h-[3.5rem]">
                                             <?php echo e($product['name']); ?>
                                         </h3>
@@ -228,6 +245,40 @@
                                     <?php else: ?>
                                         <p class="text-sm text-gray-400 mb-4 italic min-h-[2.5rem]">Tidak ada deskripsi</p>
                                     <?php endif; ?>
+                                    
+                                    <!-- Star Rating -->
+                                    <?php 
+                                    $rating = $productRatings[$product['id']] ?? ['average_rating' => 0, 'review_count' => 0];
+                                    $avgRating = $rating['average_rating'];
+                                    $reviewCount = $rating['review_count'];
+                                    ?>
+                                    <div class="flex items-center space-x-2 mb-3">
+                                        <div class="flex space-x-1">
+                                            <?php
+                                            $fullStars = floor($avgRating);
+                                            $hasHalfStar = ($avgRating - $fullStars) >= 0.5;
+                                            $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                                            
+                                            for ($i = 0; $i < $fullStars; $i++): ?>
+                                                <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                            <?php endfor;
+                                            
+                                            if ($hasHalfStar): ?>
+                                                <i class="fas fa-star-half-alt text-yellow-400 text-sm"></i>
+                                            <?php endif;
+                                            
+                                            for ($i = 0; $i < $emptyStars; $i++): ?>
+                                                <i class="far fa-star text-gray-300 text-sm"></i>
+                                            <?php endfor; ?>
+                                        </div>
+                                        <span class="text-xs text-gray-600">
+                                            <?php if ($reviewCount > 0): ?>
+                                                (<?php echo number_format($avgRating, 1); ?> • <?php echo $reviewCount; ?> reviews)
+                                            <?php else: ?>
+                                                (Belum ada review)
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
                                     
                                     <!-- Price & Stock Info -->
                                     <div class="border-t pt-4 mb-4">
@@ -310,6 +361,9 @@
         </div>
     </div>
 
+    <?php include __DIR__ . '/../layouts/footer.php'; ?>
+
     <script src="/public/assets/js/cart.js"></script>
+    <script src="/public/assets/js/favorites.js"></script>
 </body>
 </html>

@@ -49,16 +49,33 @@
                         </div>
                     <?php endif; ?>
                 </div>
-
+                                
                 <!-- Product Info -->
                 <div>
-                    <div class="mb-4">
-                        <span class="inline-block px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-bold shadow-md">
+                    <!-- Category & Eco Badge -->
+                    <div class="flex items-center gap-3 mb-4 flex-wrap">
+                        <span class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-semibold shadow-lg">
                             <i class="fas fa-tag mr-2"></i><?php echo e($product['category_name'] ?? 'Umum'); ?>
                         </span>
+                        <?php if ($product['badge_env'] == 1): ?>
+                            <span class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full text-sm font-semibold shadow-lg animate-pulse">
+                                <i class="fa-solid fa-recycle mr-2"></i>Ramah Lingkungan
+                            </span>
+                        <?php endif; ?>
                     </div>
 
-                    <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6 leading-tight"><?php echo e($product['name']); ?></h1>
+                    <!-- Product Name & Favorite Button -->
+                    <div class="flex items-start justify-between mb-6">
+                        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 leading-tight flex-1"><?php echo e($product['name']); ?></h1>
+                        <button 
+                            onclick="toggleFavorite(<?php echo $product['id']; ?>)"
+                            data-product-id="<?php echo $product['id']; ?>"
+                            class="ml-4 bg-white hover:bg-gray-50 border-2 border-gray-200 px-4 py-3 rounded-xl flex items-center space-x-2 transition shadow-sm hover:shadow-md flex-shrink-0"
+                            title="<?php echo $isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit'; ?>">
+                            <i class="<?php echo $isFavorite ? 'fas fa-heart text-red-500' : 'far fa-heart'; ?> text-xl"></i>
+                            <span class="font-semibold text-sm hidden md:inline">Favorit</span>
+                        </button>
+                    </div>
                     
                     <div class="mb-6 bg-blue-50 p-6 rounded-xl border-2 border-blue-200">
                         <p class="text-sm text-gray-600 mb-2">Harga</p>
@@ -128,6 +145,162 @@
             </div>
         </div>
 
+        <!-- Reviews Section -->
+        <div class="bg-white rounded-xl shadow-2xl p-8 mb-12" id="reviews-section">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-star text-yellow-400 mr-3"></i> Reviews & Rating
+            </h2>
+            
+            <!-- Rating Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 pb-8 border-b">
+                <!-- Average Rating -->
+                <div class="text-center">
+                    <div class="text-6xl font-bold text-gray-800 mb-2"><?php echo number_format($averageRating, 1); ?></div>
+                    <div class="flex justify-center space-x-1 mb-2">
+                        <?php
+                        $fullStars = floor($averageRating);
+                        $hasHalfStar = ($averageRating - $fullStars) >= 0.5;
+                        $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                        
+                        for ($i = 0; $i < $fullStars; $i++): ?>
+                            <i class="fas fa-star text-yellow-400 text-2xl"></i>
+                        <?php endfor;
+                        
+                        if ($hasHalfStar): ?>
+                            <i class="fas fa-star-half-alt text-yellow-400 text-2xl"></i>
+                        <?php endif;
+                        
+                        for ($i = 0; $i < $emptyStars; $i++): ?>
+                            <i class="far fa-star text-gray-300 text-2xl"></i>
+                        <?php endfor; ?>
+                    </div>
+                    <p class="text-gray-600"><?php echo $reviewCount; ?> Review<?php echo $reviewCount != 1 ? 's' : ''; ?></p>
+                </div>
+                
+                <!-- Rating Distribution -->
+                <div class="md:col-span-2">
+                    <h3 class="font-bold text-gray-800 mb-4">Rating Distribution</h3>
+                    <?php for ($star = 5; $star >= 1; $star--): 
+                        $count = $ratingDistribution[$star] ?? 0;
+                        $percentage = $reviewCount > 0 ? ($count / $reviewCount * 100) : 0;
+                    ?>
+                        <div class="flex items-center space-x-3 mb-2">
+                            <span class="text-sm font-semibold w-8"><?php echo $star; ?> <i class="fas fa-star text-yellow-400 text-xs"></i></span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3">
+                                <div class="bg-yellow-400 h-3 rounded-full transition-all duration-300" style="width: <?php echo $percentage; ?>%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600 w-12 text-right"><?php echo $count; ?></span>
+                        </div>
+                    <?php endfor; ?>
+                </div>
+            </div>
+            
+            <!-- Review Form -->
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <?php if ($canReview && !$hasReviewed): ?>
+                    <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-edit text-blue-600 mr-2"></i> Tulis Review Anda
+                        </h3>
+                        
+                        <!-- Star Rating Selector -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Rating:</label>
+                            <div class="star-rating flex space-x-2 text-4xl cursor-pointer">
+                                <i class="far fa-star star text-gray-300 hover:text-yellow-400 transition" data-rating="1"></i>
+                                <i class="far fa-star star text-gray-300 hover:text-yellow-400 transition" data-rating="2"></i>
+                                <i class="far fa-star star text-gray-300 hover:text-yellow-400 transition" data-rating="3"></i>
+                                <i class="far fa-star star text-gray-300 hover:text-yellow-400 transition" data-rating="4"></i>
+                                <i class="far fa-star star text-gray-300 hover:text-yellow-400 transition" data-rating="5"></i>
+                            </div>
+                            <input type="hidden" id="rating" value="0">
+                        </div>
+                        
+                        <!-- Review Text -->
+                        <div class="mb-4">
+                            <label for="review" class="block text-sm font-semibold text-gray-700 mb-2">Review Anda:</label>
+                            <textarea 
+                                id="review" 
+                                rows="5" 
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
+                                placeholder="Ceritakan pengalaman Anda dengan produk ini... (minimal 10 karakter)"></textarea>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button 
+                            onclick="submitReview(<?php echo $product['id']; ?>)"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition shadow-md hover:shadow-lg">
+                            <i class="fas fa-paper-plane mr-2"></i> Kirim Review
+                        </button>
+                    </div>
+                <?php elseif ($hasReviewed): ?>
+                    <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-8 text-center">
+                        <i class="fas fa-check-circle text-green-600 text-4xl mb-3"></i>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Terima Kasih!</h3>
+                        <p class="text-gray-600">Anda sudah mereview produk ini</p>
+                    </div>
+                <?php else: ?>
+                    <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 mb-8 text-center">
+                        <i class="fas fa-info-circle text-yellow-600 text-4xl mb-3"></i>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Belum Bisa Review</h3>
+                        <p class="text-gray-600">Anda hanya bisa mereview produk yang sudah Anda beli</p>
+                    </div>
+                <?php endif; ?>
+            <?php else: ?>
+                <div class="bg-gray-50 border-2 border-gray-200 rounded-xl p-6 mb-8 text-center">
+                    <i class="fas fa-user-lock text-gray-400 text-4xl mb-3"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Login Untuk Review</h3>
+                    <p class="text-gray-600 mb-4">Silakan login untuk memberikan review</p>
+                    <a href="?route=auth.login" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                        Login
+                    </a>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Reviews List -->
+            <?php if (!empty($reviews)): ?>
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Customer Reviews (<?php echo $reviewCount; ?>)</h3>
+                <div class="space-y-6">
+                    <?php foreach ($reviews as $review): ?>
+                        <div class="bg-gray-50 rounded-xl p-6 hover:shadow-md transition">
+                            <!-- Review Header -->
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                        <?php echo strtoupper(substr($review['user_name'], 0, 1)); ?>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800"><?php echo e($review['user_name']); ?></h4>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex space-x-1">
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <i class="fas fa-star <?php echo $i <= $review['rating'] ? 'text-yellow-400' : 'text-gray-300'; ?>"></i>
+                                                <?php endfor; ?>
+                                            </div>
+                                            <span class="text-sm text-gray-500">• <?php echo date('d M Y', strtotime($review['created_at'])); ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Verified Purchase Badge -->
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-check-circle mr-1"></i> Verified Purchase
+                                </span>
+                            </div>
+                            
+                            <!-- Review Text -->
+                            <p class="text-gray-700 leading-relaxed"><?php echo nl2br(e($review['comment'])); ?></p>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="text-center py-12">
+                    <i class="fas fa-comments text-gray-300 text-6xl mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">Belum Ada Review</h3>
+                    <p class="text-gray-500">Jadilah yang pertama memberikan review untuk produk ini!</p>
+                </div>
+            <?php endif; ?>
+        </div>
+
         <!-- Related Products -->
         <?php if (!empty($relatedProducts)): ?>
             <div class="mb-12">
@@ -135,7 +308,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <?php foreach (array_slice($relatedProducts, 0, 4) as $related): ?>
                         <div class="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-                            <a href="?route=product.detail&id=<?php echo e($related['id']); ?>">
+                            <a href="?route=product.detail&slug=<?php echo e($related['slug']); ?>">
                                 <?php
                                 $relatedImageUrl = ImageHelper::getImageUrl($related['image']);
                                 if ($relatedImageUrl): ?>
@@ -150,7 +323,7 @@
                                 <?php endif; ?>
                             </a>
                             <div class="p-4">
-                                <a href="?route=product.detail&id=<?php echo e($related['id']); ?>">
+                                <a href="?route=product.detail&slug=<?php echo e($related['slug']); ?>">
                                     <h3 class="font-bold text-gray-800 mb-2 hover:text-blue-600"><?php echo e($related['name']); ?></h3>
                                 </a>
                                 <span class="text-xl font-bold text-blue-600">Rp <?php echo number_format($related['price'], 0, ',', '.'); ?></span>
@@ -235,6 +408,8 @@
     }
     </script>
     <script src="/public/assets/js/cart.js"></script>
+    <script src="/public/assets/js/favorites.js"></script>
+    <script src="/public/assets/js/reviews.js"></script>
     <script>
     // Override addToCart to include quantity from selector
     const originalAddToCart = addToCart;
