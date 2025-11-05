@@ -63,7 +63,7 @@
                         <i class="fas fa-sliders-h mr-2 text-blue-600"></i> Filter Lanjutan
                     </h2>
                     
-                    <form method="GET" action="" class="space-y-6">
+                    <form method="GET" action="" class="space-y-6" id="filterForm">
                         <input type="hidden" name="route" value="products">
                         <?php if(!empty($filters['category'])): ?>
                             <input type="hidden" name="category" value="<?php echo e($filters['category']); ?>">
@@ -74,9 +74,10 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search mr-1"></i> Cari Produk
                             </label>
-                            <input type="text" name="search" value="<?php echo e($filters['search'] ?? ''); ?>" 
+                            <input type="text" name="search" id="searchInput" value="<?php echo e($filters['search'] ?? ''); ?>" 
                                    placeholder="Cari nama produk..." 
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 mt-1"><i class="fas fa-info-circle"></i> Kosongkan untuk melihat semua produk</p>
                         </div>
                         
                         <!-- Price Range -->
@@ -87,16 +88,17 @@
                             <div class="space-y-3">
                                 <div class="relative">
                                     <span class="absolute left-3 top-2.5 text-gray-500 text-sm">Rp</span>
-                                    <input type="number" name="min" value="<?php echo e($filters['minPrice'] ?? ''); ?>" 
-                                           placeholder="Harga Minimum" 
+                                    <input type="number" name="min" id="minPrice" value="<?php echo e($filters['minPrice'] ?? ''); ?>" 
+                                           placeholder="Harga Minimum" min="0" step="1000"
                                            class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 </div>
                                 <div class="relative">
                                     <span class="absolute left-3 top-2.5 text-gray-500 text-sm">Rp</span>
-                                    <input type="number" name="max" value="<?php echo e($filters['maxPrice'] ?? ''); ?>" 
-                                           placeholder="Harga Maksimum" 
+                                    <input type="number" name="max" id="maxPrice" value="<?php echo e($filters['maxPrice'] ?? ''); ?>" 
+                                           placeholder="Harga Maksimum" min="0" step="1000"
                                            class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 </div>
+                                <p class="text-xs text-gray-500"><i class="fas fa-info-circle"></i> Kosongkan untuk tidak membatasi harga</p>
                             </div>
                         </div>
                         
@@ -359,10 +361,103 @@
                 <?php endif; ?>
             </main>
         </div>
-    </div>
+        </div>
 
+    <!-- Footer -->
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
-
+    
+    <!-- Client-side filter validation -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('filterForm');
+        const searchInput = document.getElementById('searchInput');
+        const minPriceInput = document.getElementById('minPrice');
+        const maxPriceInput = document.getElementById('maxPrice');
+        
+        // Validate form before submit
+        filterForm.addEventListener('submit', function(e) {
+            let hasValidFilter = false;
+            
+            // Check if search has value
+            if (searchInput && searchInput.value.trim() !== '') {
+                hasValidFilter = true;
+            }
+            
+            // Check if min price has valid value
+            if (minPriceInput && minPriceInput.value.trim() !== '' && parseFloat(minPriceInput.value) > 0) {
+                hasValidFilter = true;
+            }
+            
+            // Check if max price has valid value
+            if (maxPriceInput && maxPriceInput.value.trim() !== '' && parseFloat(maxPriceInput.value) > 0) {
+                hasValidFilter = true;
+            }
+            
+            // Check if category is selected (from hidden input or URL)
+            const categoryInput = document.querySelector('input[name="category"]');
+            if (categoryInput && categoryInput.value) {
+                hasValidFilter = true;
+            }
+            
+            // If no valid filters and trying to search with empty values, prevent submission
+            if (!hasValidFilter && (searchInput.value.trim() === '' || minPriceInput.value === '' || maxPriceInput.value === '')) {
+                // Just submit normally - will show all products
+                hasValidFilter = true;
+            }
+            
+            // Validate price range
+            const minVal = parseFloat(minPriceInput.value) || 0;
+            const maxVal = parseFloat(maxPriceInput.value) || 0;
+            
+            if (minVal > 0 && maxVal > 0 && minVal > maxVal) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Harga Tidak Valid',
+                    text: 'Harga minimum tidak boleh lebih besar dari harga maksimum!',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return false;
+            }
+        });
+        
+        // Clear empty inputs before submit to prevent "?search=&min=&max=" URLs
+        filterForm.addEventListener('submit', function() {
+            // Remove empty search parameter
+            if (searchInput && searchInput.value.trim() === '') {
+                searchInput.removeAttribute('name');
+            }
+            
+            // Remove empty/zero price parameters
+            if (minPriceInput && (minPriceInput.value.trim() === '' || parseFloat(minPriceInput.value) <= 0)) {
+                minPriceInput.removeAttribute('name');
+            }
+            
+            if (maxPriceInput && (maxPriceInput.value.trim() === '' || parseFloat(maxPriceInput.value) <= 0)) {
+                maxPriceInput.removeAttribute('name');
+            }
+        });
+        
+        // Real-time validation feedback
+        if (minPriceInput && maxPriceInput) {
+            function validatePriceRange() {
+                const minVal = parseFloat(minPriceInput.value) || 0;
+                const maxVal = parseFloat(maxPriceInput.value) || 0;
+                
+                if (minVal > 0 && maxVal > 0 && minVal > maxVal) {
+                    minPriceInput.classList.add('border-red-500');
+                    maxPriceInput.classList.add('border-red-500');
+                } else {
+                    minPriceInput.classList.remove('border-red-500');
+                    maxPriceInput.classList.remove('border-red-500');
+                }
+            }
+            
+            minPriceInput.addEventListener('input', validatePriceRange);
+            maxPriceInput.addEventListener('input', validatePriceRange);
+        }
+    });
+    </script>
     <script src="/public/assets/js/cart.js"></script>
     <script src="/public/assets/js/favorites.js"></script>
 </body>

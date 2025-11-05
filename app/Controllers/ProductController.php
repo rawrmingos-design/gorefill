@@ -63,11 +63,31 @@ class ProductController extends BaseController
         $limit = 12; // 12 products per page
         $offset = ($page - 1) * $limit;
         
-        // Get filter parameters
-        $category = isset($_GET['category']) && $_GET['category'] !== '' ? (int)$_GET['category'] : null;
-        $minPrice = isset($_GET['min']) ? (float)$_GET['min'] : null;
-        $maxPrice = isset($_GET['max']) ? (float)$_GET['max'] : null;
-        $search = $_GET['search'] ?? null;
+        // ✅ FIX: Sanitize filter parameters - convert empty strings to null
+        // This prevents empty form submissions from being treated as filters
+        $category = isset($_GET['category']) && trim($_GET['category']) !== '' ? (int)$_GET['category'] : null;
+        
+        // ✅ FIX: Only set price filters if value is not empty AND greater than 0
+        $minPrice = null;
+        if (isset($_GET['min']) && trim($_GET['min']) !== '') {
+            $minPrice = (float)$_GET['min'];
+            // If converted to 0 or negative, treat as null (invalid)
+            if ($minPrice <= 0) {
+                $minPrice = null;
+            }
+        }
+        
+        $maxPrice = null;
+        if (isset($_GET['max']) && trim($_GET['max']) !== '') {
+            $maxPrice = (float)$_GET['max'];
+            // If converted to 0 or negative, treat as null (invalid)
+            if ($maxPrice <= 0) {
+                $maxPrice = null;
+            }
+        }
+        
+        // ✅ FIX: Only set search if value is not empty after trimming
+        $search = isset($_GET['search']) && trim($_GET['search']) !== '' ? trim($_GET['search']) : null;
         
         // Get sorting parameters
         $sort = $_GET['sort'] ?? 'created_at';
@@ -77,7 +97,8 @@ class ProductController extends BaseController
         $products = [];
         $totalProducts = 0;
         
-        if ($search) {
+        // ✅ FIX: Only enter search mode if search term is valid (not null/empty)
+        if ($search !== null) {
             // Search mode
             $products = $this->productModel->search($search, 100); // Get all matching
             
