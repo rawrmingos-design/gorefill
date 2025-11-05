@@ -153,6 +153,6 @@
         <?php endif; ?>
     </div>
 
-    <script src="/public/assets/js/cart.js"></script>
+    <script src="public/assets/js/cart.js"></script>
 </body>
 </html>

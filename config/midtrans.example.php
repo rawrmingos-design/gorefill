@@ -32,6 +32,8 @@ return [
         'sandbox' => 'https://app.sandbox.midtrans.com/snap/snap.js',
         'production' => 'https://app.midtrans.com/snap/snap.js'
     ],
+
+    'is_sanitized' => true,
     
     // Enabled Payment Methods
     // Customize which payment methods to show in Snap popup

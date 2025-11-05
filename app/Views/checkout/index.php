@@ -466,7 +466,7 @@
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
     <script src="public/assets/js/cart.js"></script>
-    <script src="/public/assets/js/maps.js"></script>
+    <script src="public/assets/js/maps.js"></script>
     <script>
         // Select address
         function selectAddress(addressId) {

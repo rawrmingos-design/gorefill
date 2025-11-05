@@ -149,7 +149,7 @@ function updateCartBadge(count) {
 **Line 237:** Fixed cart.js path
 ```diff
 - <script src="assets/js/cart.js"></script>
-+ <script src="/public/assets/js/cart.js"></script>
++ <script src="public/assets/js/cart.js"></script>
 ```
 
 ### 2. `app/Views/admin/products/index.php`

@@ -458,7 +458,7 @@
         }
     });
     </script>
-    <script src="/public/assets/js/cart.js"></script>
-    <script src="/public/assets/js/favorites.js"></script>
+    <script src="public/assets/js/cart.js"></script>
+    <script src="public/assets/js/favorites.js"></script>
 </body>
 </html>

@@ -407,9 +407,9 @@
         });
     }
     </script>
-    <script src="/public/assets/js/cart.js"></script>
-    <script src="/public/assets/js/favorites.js"></script>
-    <script src="/public/assets/js/reviews.js"></script>
+    <script src="public/assets/js/cart.js"></script>
+    <script src="public/assets/js/favorites.js"></script>
+    <script src="public/assets/js/reviews.js"></script>
     <script>
     // Override addToCart to include quantity from selector
     const originalAddToCart = addToCart;

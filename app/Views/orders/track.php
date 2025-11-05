@@ -256,7 +256,7 @@
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
     <!-- Load tracking.js -->
-    <script src="/public/assets/js/tracking.js"></script>
+    <script src="public/assets/js/tracking.js"></script>
     
     <?php if ($order['status'] === 'shipped' && $courierLocation && $order['shipping_latitude'] && $order['shipping_longitude']): ?>
         <!-- Initialize tracking map -->
