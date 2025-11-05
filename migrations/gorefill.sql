@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 03, 2025 at 04:15 PM
+-- Generation Time: Nov 05, 2025 at 08:37 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.4.12
 
@@ -30,14 +30,14 @@ SET time_zone = "+00:00";
 CREATE TABLE `addresses` (
   `id` int NOT NULL,
   `user_id` int NOT NULL,
-  `label` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `street` text COLLATE utf8mb4_general_ci,
-  `city` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `province` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `regency` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `district` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `village` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `postal_code` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `street` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `city` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `province` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `regency` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `district` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `village` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `postal_code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `lat` decimal(10,7) DEFAULT NULL,
   `lng` decimal(10,7) DEFAULT NULL,
   `is_default` tinyint(1) DEFAULT '0',
@@ -60,9 +60,9 @@ INSERT INTO `addresses` (`id`, `user_id`, `label`, `street`, `city`, `province`,
 
 CREATE TABLE `categories` (
   `id` int NOT NULL,
-  `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `slug` varchar(120) COLLATE utf8mb4_general_ci NOT NULL,
-  `description` text COLLATE utf8mb4_general_ci,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `slug` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -197,62 +197,55 @@ CREATE TABLE `orders` (
   `id` int NOT NULL,
   `user_id` int NOT NULL,
   `voucher_id` int DEFAULT NULL,
-  `transaction_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `transaction_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `total` decimal(12,2) NOT NULL,
-  `status` enum('pending','confirmed','packing','shipped','delivered','cancelled','expired') COLLATE utf8mb4_general_ci DEFAULT 'pending',
-  `payment_method` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `payment_type` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `payment_status` enum('pending','unpaid','paid','failed','expired','cancelled','refund') COLLATE utf8mb4_general_ci DEFAULT 'pending',
-  `midtrans_status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fraud_status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `note` text COLLATE utf8mb4_general_ci,
+  `status` enum('pending','confirmed','packing','shipped','delivered','cancelled','expired') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'pending',
+  `payment_method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `payment_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `payment_status` enum('pending','unpaid','paid','failed','expired','cancelled','refund') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'pending',
+  `midtrans_status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fraud_status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `callback_data` json DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `order_number` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Format: ORD-YYYYMMDD-XXXX',
+  `order_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Format: ORD-YYYYMMDD-XXXX',
   `address_id` int UNSIGNED DEFAULT NULL,
   `subtotal` decimal(12,2) NOT NULL DEFAULT '0.00',
   `discount_amount` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `snap_token` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Midtrans Snap Token',
+  `snap_token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Midtrans Snap Token',
   `paid_at` timestamp NULL DEFAULT NULL,
-  `shipping_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `shipping_phone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `shipping_address` text COLLATE utf8mb4_general_ci,
-  `shipping_city` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `shipping_postal_code` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `shipping_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `shipping_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `shipping_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `shipping_city` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `shipping_postal_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `shipping_latitude` decimal(10,8) DEFAULT NULL,
   `shipping_longitude` decimal(11,8) DEFAULT NULL,
-  `courier` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'JNE, TIKI, POS, etc',
+  `courier` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'JNE, TIKI, POS, etc',
   `courier_id` int DEFAULT NULL,
-  `tracking_number` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `transaction_status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'capture, settlement, pending, deny, cancel, expire',
+  `tracking_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `transaction_status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'capture, settlement, pending, deny, cancel, expire',
   `transaction_time` timestamp NULL DEFAULT NULL,
   `settlement_time` timestamp NULL DEFAULT NULL,
   `gross_amount` decimal(12,2) DEFAULT NULL,
-  `currency` varchar(3) COLLATE utf8mb4_general_ci DEFAULT 'IDR',
-  `signature_key` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bank` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `va_number` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bill_key` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `biller_code` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `pdf_url` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `finish_redirect_url` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currency` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'IDR',
+  `signature_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bank` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `va_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bill_key` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `biller_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `pdf_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `finish_redirect_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `expiry_time` timestamp NULL DEFAULT NULL,
-  `store` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `payment_code` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `customer_email` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `customer_phone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `store` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `payment_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `customer_email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `customer_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `refund_amount` decimal(12,2) DEFAULT '0.00',
-  `refund_reason` text COLLATE utf8mb4_general_ci,
+  `refund_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `refunded_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `orders`
---
-
-INSERT INTO `orders` (`id`, `user_id`, `voucher_id`, `transaction_id`, `total`, `status`, `payment_method`, `payment_type`, `payment_status`, `midtrans_status`, `fraud_status`, `note`, `callback_data`, `created_at`, `order_number`, `address_id`, `subtotal`, `discount_amount`, `snap_token`, `paid_at`, `shipping_name`, `shipping_phone`, `shipping_address`, `shipping_city`, `shipping_postal_code`, `shipping_latitude`, `shipping_longitude`, `courier`, `courier_id`, `tracking_number`, `transaction_status`, `transaction_time`, `settlement_time`, `gross_amount`, `currency`, `signature_key`, `bank`, `va_number`, `bill_key`, `biller_code`, `pdf_url`, `finish_redirect_url`, `expiry_time`, `store`, `payment_code`, `customer_email`, `customer_phone`, `refund_amount`, `refund_reason`, `refunded_at`, `updated_at`) VALUES
-(47, 55, 63, '757c9396-69a7-4b86-a544-057674cc9bd3', '83700.00', 'packing', 'qris', 'qris', 'paid', 'settlement', 'accept', NULL, '{\"currency\": \"IDR\", \"order_id\": \"ORD-20251029-112856-51CF\", \"status_code\": \"200\", \"fraud_status\": \"accept\", \"gross_amount\": \"83700.00\", \"payment_type\": \"qris\", \"signature_key\": \"3c1f15ec41ab50d72219236e0d79408db2bface5c30d3455797ae3dbe81c2112e3b503f0fdbaa774b09d823b860fb13479bfec35bf1e2dc3a43a09fbba60ea5a\", \"status_message\": \"Success, transaction is found\", \"transaction_id\": \"757c9396-69a7-4b86-a544-057674cc9bd3\", \"settlement_time\": \"2025-10-29 11:29:16\", \"transaction_time\": \"2025-10-29 11:29:00\", \"transaction_status\": \"settlement\"}', '2025-10-29 04:28:56', 'ORD-20251029-112856-51CF', 16, '93000.00', '9300.00', 'e18b1b97-e830-4e46-af39-8dd8a18af074', '2025-10-29 04:29:17', 'Rumah', '-', 'Pacific Mall, Jl. Kapten Sudibyo Lantai Dasar, Pekauman, Kec. Tegal Bar., Kota Tegal, Jawa Tengah 52125, Pekauman Kulon, Dukuhturi', 'Tegal', '52192', '-6.89044260', '109.13383840', NULL, 52, NULL, 'settlement', '2025-10-29 04:29:00', '2025-10-29 04:29:16', '83700.00', 'IDR', '3c1f15ec41ab50d72219236e0d79408db2bface5c30d3455797ae3dbe81c2112e3b503f0fdbaa774b09d823b860fb13479bfec35bf1e2dc3a43a09fbba60ea5a', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'usera@gorefill.test', '081300000001', '0.00', NULL, NULL, '2025-10-29 05:29:46');
 
 -- --------------------------------------------------------
 
@@ -264,24 +257,14 @@ CREATE TABLE `order_items` (
   `id` int NOT NULL,
   `order_id` int NOT NULL,
   `product_id` int NOT NULL,
-  `product_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `product_image` varchar(500) COLLATE utf8mb4_general_ci NOT NULL,
+  `product_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `product_image` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `product_price` decimal(12,2) NOT NULL COMMENT 'Harga asli produk saat dibeli',
   `quantity` int UNSIGNED NOT NULL DEFAULT '1',
   `price` decimal(12,2) DEFAULT NULL,
   `subtotal` decimal(12,2) NOT NULL COMMENT 'qty * price',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `order_items`
---
-
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `product_image`, `product_price`, `quantity`, `price`, `subtotal`, `created_at`) VALUES
-(314, 47, 1, 'Refill Shampoo Herbal 500ml', 'shampoo.jpg', '25000.00', 1, '25000.00', '25000.00', '2025-10-29 04:28:56'),
-(315, 47, 8, 'Refill Sabun Cuci Piring 1L', 'sabun_piring.jpg', '18000.00', 1, '18000.00', '18000.00', '2025-10-29 04:28:56'),
-(316, 47, 9, 'Refill Pelicin Pakaian 1L', 'pelicin.jpg', '22000.00', 1, '22000.00', '22000.00', '2025-10-29 04:28:56'),
-(317, 47, 6, 'Refill Conditioner 500ml', 'conditioner.jpg', '28000.00', 1, '28000.00', '28000.00', '2025-10-29 04:28:56');
 
 -- --------------------------------------------------------
 
@@ -292,7 +275,7 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `prod
 CREATE TABLE `payment_logs` (
   `id` int NOT NULL,
   `order_id` int DEFAULT NULL,
-  `midtrans_order_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `midtrans_order_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `payload` json DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -305,15 +288,15 @@ CREATE TABLE `payment_logs` (
 
 CREATE TABLE `products` (
   `id` int NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `slug` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `category_id` int NOT NULL,
   `price` decimal(12,2) NOT NULL,
   `stock` int DEFAULT '0',
   `rating` float DEFAULT '0',
   `badge_env` tinyint(1) DEFAULT '0',
-  `description` text COLLATE utf8mb4_general_ci,
-  `image` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -356,9 +339,9 @@ CREATE TABLE `product_reviews` (
   `product_id` int DEFAULT NULL,
   `user_id` int DEFAULT NULL,
   `rating` tinyint DEFAULT NULL,
-  `comment` text COLLATE utf8mb4_general_ci,
+  `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -368,11 +351,11 @@ CREATE TABLE `product_reviews` (
 
 CREATE TABLE `users` (
   `id` int NOT NULL,
-  `name` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `phone` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `role` enum('user','admin','kurir') COLLATE utf8mb4_general_ci DEFAULT 'user',
+  `name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `phone` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `role` enum('user','admin','kurir') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'user',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -405,14 +388,14 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `role`, `create
 
 CREATE TABLE `vouchers` (
   `id` int NOT NULL,
-  `code` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `discount_percent` int NOT NULL,
   `min_purchase` decimal(12,2) DEFAULT '0.00',
   `usage_limit` int DEFAULT '1',
   `used_count` int DEFAULT '0',
   `expires_at` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `vouchers`
@@ -564,13 +547,13 @@ ALTER TABLE `favorites`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=318;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=324;
 
 --
 -- AUTO_INCREMENT for table `payment_logs`
@@ -600,7 +583,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `vouchers`
 --
 ALTER TABLE `vouchers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
 
 --
 -- Constraints for dumped tables
