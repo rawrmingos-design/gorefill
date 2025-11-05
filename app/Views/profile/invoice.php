@@ -197,9 +197,7 @@
         </div>
     </div>
 
-    <script>
-        // Auto print dialog when page loads (optional)
-        // window.onload = function() { window.print(); }
-    </script>
+    <script src="public/assets/js/cart.js"></script>
+    <script src="public/assets/js/favorites.js"></script>
 </body>
 </html>

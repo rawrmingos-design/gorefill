@@ -254,7 +254,8 @@
 
     <!-- Footer -->
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
-
+<script src="public/assets/js/cart.js"></script>
+    <script src="public/assets/js/favorites.js"></script>
     <!-- Load tracking.js -->
     <script src="public/assets/js/tracking.js"></script>
     
