@@ -3,8 +3,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center">
-                <a href="index.php?route=admin.dashboard" class="text-2xl font-bold text-green-600 hover:text-green-700 transition-colors">
-                    🌿 GoRefill Admin
+                <a href="index.php?route=admin.dashboard" class="flex items-center space-x-3 group">
+                    <img src="/public/assets/images/logo.png" alt="GoRefill Logo" class="h-10 w-10 transition-transform group-hover:scale-110">
+                    <div class="flex flex-col">
+                        <span class="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">GoRefill</span>
+                        <span class="text-xs text-gray-500 font-medium">Admin Panel</span>
+                    </div>
                 </a>
             </div>
             <div class="flex items-center space-x-1">

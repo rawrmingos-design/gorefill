@@ -1,12 +1,31 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php 
+    require_once __DIR__ . '/../../Helpers/SeoHelper.php';
+    echo SeoHelper::generateMetaTags([
+        'title' => 'Katalog Produk - Air Galon & LPG | GoRefill',
+        'description' => 'Jelajahi berbagai produk air galon dan tabung gas LPG berkualitas. Harga terjangkau, pengiriman cepat, dan layanan terpercaya.',
+        'keywords' => 'katalog produk, air galon murah, gas LPG murah, beli air galon online, beli gas online, GoRefill',
+        'url' => SeoHelper::getCurrentUrl ?? 'http://localhost:8000/?route=products',
+        'type' => 'website'
+    ]);
+    ?>
     <title><?php echo e($title); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <?php
+    // Structured Data for breadcrumbs
+    echo SeoHelper::generateStructuredData([
+        'type' => 'BreadcrumbList',
+        'items' => [
+            ['name' => 'Home', 'url' => 'http://localhost:8000/'],
+            ['name' => 'Products', 'url' => 'http://localhost:8000/?route=products']
+        ]
+    ]);
+    ?>
     <style>
         .product-card {
             transition: all 0.3s ease;
