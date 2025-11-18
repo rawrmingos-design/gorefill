@@ -60,7 +60,8 @@ test_*.php
 
 !/migrations/gorefill.sql
 *.sql
-
 LOGO-SEO-IMPROVEMENTS.md
 WEEK4-DAY20-TESTING.md
 manual-checklist.md
+IMPLEMENTATION-COMPLETE.md
+REQUIREMENT-FULFILLMENT-ANALYSIS.md

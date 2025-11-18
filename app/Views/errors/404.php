@@ -99,7 +99,7 @@
             
             <!-- Footer -->
             <div class="mt-8 text-gray-500 text-sm">
-                <p>© 2025 GoRefill - Developed by Fahmi Aksan Nugroho</p>
+                <p>© 2025 GoRefill - Developed by ❤︎</p>
             </div>
         </div>
     </div>

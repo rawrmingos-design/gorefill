@@ -24,6 +24,12 @@
       <!-- Menu (desktop) -->
       <div class="hidden md:flex items-center space-x-4">
         <a href="?route=products" class="text-gray-700 hover:text-blue-600">Products</a>
+        <a href="?route=faq" class="text-gray-700 hover:text-blue-600">
+          <i class="fas fa-question-circle"></i> FAQ
+        </a>
+        <a href="?route=contact" class="text-gray-700 hover:text-blue-600">
+          <i class="fas fa-envelope"></i> Contact
+        </a>
         <a href="?route=cart" class="text-gray-700 hover:text-blue-600">
           🛒 Cart <span id="cart-badge" class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">0</span>
         </a>
@@ -65,6 +71,12 @@
   <!-- Menu (mobile) -->
   <div id="mobile-menu" class="md:hidden hidden px-4 pb-4 space-y-2 bg-white shadow">
     <a href="?route=products" class="block text-gray-700 hover:text-blue-600">Products</a>
+    <a href="?route=faq" class="block text-gray-700 hover:text-blue-600">
+      <i class="fas fa-question-circle"></i> FAQ
+    </a>
+    <a href="?route=contact" class="block text-gray-700 hover:text-blue-600">
+      <i class="fas fa-envelope"></i> Contact
+    </a>
     <a href="?route=cart" class="block text-gray-700 hover:text-blue-600">
       🛒 Cart <span id="cart-badge-mobile"
         class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">0</span>

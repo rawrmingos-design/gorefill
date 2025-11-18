@@ -208,6 +208,21 @@ class CourierController {
         $success = $this->orderModel->updateStatus($order['order_number'], 'shipped');
 
         if ($success) {
+            // Send shipping email notification
+            try {
+                require_once __DIR__ . '/../Services/MailService.php';
+                $mailService = new MailService();
+                
+                // Get full order details with items
+                $orderDetails = $this->orderModel->getOrderWithItems($order['order_number']);
+                if ($orderDetails) {
+                    $mailService->sendShippingNotification($orderDetails);
+                }
+            } catch (Exception $e) {
+                error_log("Failed to send shipping email: " . $e->getMessage());
+                // Don't fail the request if email fails
+            }
+            
             echo json_encode([
                 'success' => true,
                 'message' => 'Delivery started successfully',
@@ -265,6 +280,21 @@ class CourierController {
         $success = $this->orderModel->updateStatus($order['order_number'], 'delivered');
 
         if ($success) {
+            // Send delivered email notification
+            try {
+                require_once __DIR__ . '/../Services/MailService.php';
+                $mailService = new MailService();
+                
+                // Get full order details with items
+                $orderDetails = $this->orderModel->getOrderWithItems($order['order_number']);
+                if ($orderDetails) {
+                    $mailService->sendDeliveredNotification($orderDetails);
+                }
+            } catch (Exception $e) {
+                error_log("Failed to send delivered email: " . $e->getMessage());
+                // Don't fail the request if email fails
+            }
+            
             echo json_encode([
                 'success' => true,
                 'message' => 'Delivery completed successfully',

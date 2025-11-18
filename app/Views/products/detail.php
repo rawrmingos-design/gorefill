@@ -94,9 +94,9 @@
                         <span class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-semibold shadow-lg">
                             <i class="fas fa-tag mr-2"></i><?php echo e($product['category_name'] ?? 'Umum'); ?>
                         </span>
-                        <?php if ($product['badge_env'] == 1): ?>
-                            <span class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full text-sm font-semibold shadow-lg animate-pulse">
-                                <i class="fa-solid fa-recycle mr-2"></i>Ramah Lingkungan
+                        <?php if (isset($product['is_eco_friendly']) && $product['is_eco_friendly'] == 1): ?>
+                            <span class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full text-sm font-semibold shadow-lg">
+                                🌿 Eco-Friendly
                             </span>
                         <?php endif; ?>
                     </div>

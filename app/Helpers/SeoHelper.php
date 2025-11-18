@@ -72,7 +72,7 @@ class SeoHelper
     /**
      * Get current URL
      */
-    private static function getCurrentUrl()
+    public static function getCurrentUrl()
     {
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -108,7 +108,12 @@ class SeoHelper
         } elseif ($type === 'Product') {
             return self::generateProductSchema($data);
         } elseif ($type === 'BreadcrumbList') {
-            return self::generateBreadcrumbSchema($data);
+            // For breadcrumb schema, we only care about the items list
+            $items = $data['items'] ?? [];
+            if (!is_array($items) || empty($items)) {
+                return '';
+            }
+            return self::generateBreadcrumbSchema($items);
         }
         
         return '';
@@ -171,12 +176,21 @@ class SeoHelper
         $position = 1;
         
         foreach ($items as $item) {
+            // Skip invalid entries to avoid runtime errors
+            if (!is_array($item) || !isset($item['name'], $item['url'])) {
+                continue;
+            }
+            
             $itemListElement[] = [
                 "@type" => "ListItem",
                 "position" => $position++,
                 "name" => $item['name'],
                 "item" => $item['url']
             ];
+        }
+        
+        if (empty($itemListElement)) {
+            return '';
         }
         
         $schema = [

@@ -274,7 +274,8 @@ class AdminController extends BaseController
             'stock' => (int) $_POST['stock'],
             'category_id' => (int) $_POST['category_id'],
             'slug' => $slug,
-            'image' => $imageName
+            'image' => $imageName,
+            'is_eco_friendly' => isset($_POST['is_eco_friendly']) ? 1 : 0
         ];
         
         $productId = $this->productModel->create($productData);
@@ -374,7 +375,8 @@ class AdminController extends BaseController
             'description' => trim($_POST['description'] ?? ''),
             'price' => (float) $_POST['price'],
             'stock' => (int) $_POST['stock'],
-            'category_id' => (int) $_POST['category_id']
+            'category_id' => (int) $_POST['category_id'],
+            'is_eco_friendly' => isset($_POST['is_eco_friendly']) ? 1 : 0
         ];
         
         // Handle image update

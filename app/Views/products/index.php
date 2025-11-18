@@ -7,7 +7,8 @@
         'title' => 'Katalog Produk - Air Galon & LPG | GoRefill',
         'description' => 'Jelajahi berbagai produk air galon dan tabung gas LPG berkualitas. Harga terjangkau, pengiriman cepat, dan layanan terpercaya.',
         'keywords' => 'katalog produk, air galon murah, gas LPG murah, beli air galon online, beli gas online, GoRefill',
-        'url' => SeoHelper::getCurrentUrl ?? 'http://localhost:8000/?route=products',
+        // Gunakan URL eksplisit untuk halaman produk. SeoHelper sendiri sudah punya fallback getCurrentUrl() jika key ini tidak di-set.
+        'url' => SeoHelper::getCurrentUrl(),
         'type' => 'website'
     ]);
     ?>
@@ -244,9 +245,9 @@
                                         <span class="inline-block px-3 py-1 text-xs bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-semibold">
                                             <i class="fas fa-tag mr-1"></i> <?php echo e($product['category_name'] ?? 'Umum'); ?>
                                         </span>
-                                        <?php if ($product['badge_env'] == 1): ?>
-                                            <span class="inline-block px-3 py-1 text-xs bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full font-semibold animate-pulse">
-                                                <i class="fa-solid fa-recycle mr-1"></i> Ramah Lingkungan
+                                        <?php if (isset($product['is_eco_friendly']) && $product['is_eco_friendly'] == 1): ?>
+                                            <span class="inline-block px-3 py-1 text-xs bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full font-semibold shadow-md">
+                                                🌿 Eco-Friendly
                                             </span>
                                         <?php endif; ?>
                                     </div>

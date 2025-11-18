@@ -55,6 +55,19 @@
                         </div>
                     </div>
 
+                    <!-- Eco-Friendly Badge -->
+                    <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_eco_friendly" value="1" <?php echo (isset($product['is_eco_friendly']) && $product['is_eco_friendly'] == 1) ? 'checked' : ''; ?> class="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500">
+                            <span class="ml-3 text-gray-700 font-semibold">
+                                🌿 Produk Ramah Lingkungan (Eco-Friendly)
+                            </span>
+                        </label>
+                        <p class="text-xs text-gray-600 mt-2 ml-8">
+                            Centang jika produk ini mendukung konsep refill atau ramah lingkungan
+                        </p>
+                    </div>
+
                     <!-- Description -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2">Description</label>

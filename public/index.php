@@ -495,6 +495,25 @@ try {
             $courierController->completeDelivery();
             break;
             
+        // ==================== FAQ & CONTACT ROUTES ====================
+        case 'faq':
+            require_once __DIR__ . '/../app/Controllers/FaqController.php';
+            $faqController = new FaqController();
+            $faqController->index();
+            break;
+            
+        case 'contact':
+            require_once __DIR__ . '/../app/Controllers/ContactController.php';
+            $contactController = new ContactController();
+            $contactController->index();
+            break;
+            
+        case 'contact.submit':
+            require_once __DIR__ . '/../app/Controllers/ContactController.php';
+            $contactController = new ContactController();
+            $contactController->submit();
+            break;
+            
         // ==================== TESTING ROUTE ====================
         case 'test.routing':
             // Test route to verify routing system works

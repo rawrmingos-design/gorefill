@@ -303,6 +303,144 @@ class MailService
     }
     
     /**
+     * Send contact form message to admin
+     * 
+     * @param array $data Contact form data (name, email, subject, message)
+     * @return bool Success status
+     */
+    public function sendContactFormToAdmin($data)
+    {
+        try {
+            $body = $this->getEmailTemplate();
+            
+            // Replace placeholders
+            $body = str_replace('{{content}}', "
+                <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>
+                    <h1 style='color: white; margin: 0; font-size: 28px;'>📧 Pesan Baru dari Contact Form</h1>
+                </div>
+                
+                <div style='padding: 30px;'>
+                    <p style='font-size: 16px; color: #333; margin-bottom: 20px;'>
+                        Anda menerima pesan baru dari contact form GoRefill:
+                    </p>
+                    
+                    <div style='background: #f7fafc; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+                        <table style='width: 100%; border-collapse: collapse;'>
+                            <tr>
+                                <td style='padding: 10px 0; font-weight: bold; color: #4a5568; width: 120px;'>Nama:</td>
+                                <td style='padding: 10px 0; color: #2d3748;'>" . htmlspecialchars($data['name']) . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px 0; font-weight: bold; color: #4a5568;'>Email:</td>
+                                <td style='padding: 10px 0; color: #2d3748;'>" . htmlspecialchars($data['email']) . "</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px 0; font-weight: bold; color: #4a5568;'>Subjek:</td>
+                                <td style='padding: 10px 0; color: #2d3748;'>" . htmlspecialchars($data['subject']) . "</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div style='background: white; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0;'>
+                        <p style='font-weight: bold; color: #4a5568; margin-bottom: 10px;'>Pesan:</p>
+                        <p style='color: #2d3748; line-height: 1.6; white-space: pre-wrap;'>" . nl2br(htmlspecialchars($data['message'])) . "</p>
+                    </div>
+                    
+                    <div style='background: #edf2f7; padding: 15px; border-radius: 8px; margin-top: 30px;'>
+                        <p style='margin: 0; color: #718096; font-size: 14px;'>
+                            💡 <strong>Tips:</strong> Balas email ini ke <a href='mailto:" . htmlspecialchars($data['email']) . "' style='color: #667eea;'>" . htmlspecialchars($data['email']) . "</a> untuk merespon customer.
+                        </p>
+                    </div>
+                </div>
+            ", $body);
+            
+            // Send to admin email
+            $adminEmail = $this->config['admin_email'] ?? $this->config['from_email'];
+            
+            return $this->send(
+                $adminEmail,
+                '📧 Contact Form: ' . $data['subject'],
+                $body,
+                true,
+                $data['email'], // Set reply-to as customer email
+                $data['name']
+            );
+            
+        } catch (Exception $e) {
+            error_log("Contact form to admin error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Send auto-reply to customer after contact form submission
+     * 
+     * @param array $data Contact form data (name, email, subject)
+     * @return bool Success status
+     */
+    public function sendContactFormAutoReply($data)
+    {
+        try {
+            $body = $this->getEmailTemplate();
+            
+            // Replace placeholders
+            $body = str_replace('{{content}}', "
+                <div style='background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>
+                    <h1 style='color: white; margin: 0; font-size: 28px;'>✅ Pesan Anda Telah Diterima!</h1>
+                </div>
+                
+                <div style='padding: 30px;'>
+                    <p style='font-size: 16px; color: #333;'>
+                        Halo <strong>" . htmlspecialchars($data['name']) . "</strong>,
+                    </p>
+                    
+                    <p style='font-size: 16px; color: #555; line-height: 1.6;'>
+                        Terima kasih telah menghubungi <strong>GoRefill</strong>! 🎉
+                    </p>
+                    
+                    <div style='background: #f0fdf4; border-left: 4px solid #48bb78; padding: 20px; margin: 20px 0; border-radius: 4px;'>
+                        <p style='margin: 0; color: #166534; line-height: 1.6;'>
+                            <strong>📌 Subjek:</strong> " . htmlspecialchars($data['subject']) . "<br><br>
+                            Kami telah menerima pesan Anda dan akan merespon dalam <strong>1x24 jam</strong> pada hari kerja.
+                        </p>
+                    </div>
+                    
+                    <p style='font-size: 16px; color: #555; line-height: 1.6;'>
+                        Tim customer service kami akan segera meninjau pesan Anda dan memberikan solusi terbaik.
+                    </p>
+                    
+                    <div style='background: #edf2f7; padding: 20px; border-radius: 8px; margin: 30px 0; text-align: center;'>
+                        <p style='margin: 0 0 15px 0; color: #4a5568; font-size: 14px;'>
+                            <strong>Butuh bantuan segera?</strong>
+                        </p>
+                        <p style='margin: 0; color: #718096; font-size: 14px;'>
+                            📧 Email: <a href='mailto:support@gorefill.com' style='color: #667eea;'>support@gorefill.com</a><br>
+                            📱 WhatsApp: <a href='https://wa.me/6281234567890' style='color: #48bb78;'>+62 812-3456-7890</a><br>
+                            🕐 Jam Operasional: Senin - Jumat, 09:00 - 17:00 WIB
+                        </p>
+                    </div>
+                    
+                    <p style='font-size: 14px; color: #888; margin-top: 30px;'>
+                        Salam hangat,<br>
+                        <strong style='color: #48bb78;'>Tim GoRefill</strong> 💚
+                    </p>
+                </div>
+            ", $body);
+            
+            return $this->send(
+                $data['email'],
+                'Konfirmasi: Pesan Anda Telah Diterima - GoRefill',
+                $body,
+                true
+            );
+            
+        } catch (Exception $e) {
+            error_log("Contact form auto-reply error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
      * Send test email
      * 
      * @param string $to Recipient email

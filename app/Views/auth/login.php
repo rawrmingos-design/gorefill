@@ -119,9 +119,7 @@
             </div>
         </div>
 
-        <div class="text-center mt-4 text-gray-600 text-sm">
-            <p>✨ Day 4: Enhanced Authentication UI</p>
-        </div>
+        
     </div>
 
     <script>
