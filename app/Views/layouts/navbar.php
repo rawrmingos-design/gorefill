@@ -4,7 +4,7 @@
       <!-- Logo -->
       <div class="flex items-center">
         <a href="?route=home" class="flex items-center space-x-3 group">
-          <img src="/public/assets/images/logo.png" alt="GoRefill Logo" class="h-12 w-12 transition-transform group-hover:scale-110">
+          <img src="<?= asset('images/logo.png') ?>" alt="GoRefill Logo" class="h-12 w-12 transition-transform group-hover:scale-110">
           <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-green-700 transition-all">
             GoRefill
           </span>

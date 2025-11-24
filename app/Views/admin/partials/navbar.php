@@ -4,7 +4,7 @@
         <div class="flex justify-between h-16">
             <div class="flex items-center">
                 <a href="index.php?route=admin.dashboard" class="flex items-center space-x-3 group">
-                    <img src="/public/assets/images/logo.png" alt="GoRefill Logo" class="h-10 w-10 transition-transform group-hover:scale-110">
+                    <img src="<?= asset('images/logo.png') ?>" alt="GoRefill Logo" class="h-10 w-10 transition-transform group-hover:scale-110">
                     <div class="flex flex-col">
                         <span class="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">GoRefill</span>
                         <span class="text-xs text-gray-500 font-medium">Admin Panel</span>

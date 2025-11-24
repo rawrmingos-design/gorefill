@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="icon" type="image/png" href="/public/assets/images/logo.png">
+    <link rel="icon" type="image/png" href="<?= asset('images/logo.png') ?>">
 </head>
 <body class="bg-gray-50">
     <?php include __DIR__ . '/../layouts/navbar.php'; ?>

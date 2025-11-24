@@ -124,7 +124,7 @@
                                     <img src="<?= htmlspecialchars($itemImageUrl) ?>" 
                                          alt="<?= htmlspecialchars($item['product_name']) ?>"
                                          class="w-20 h-20 object-cover rounded"
-                                         onerror="this.onerror=null; this.src='/public/assets/images/placeholder.jpg'">
+                                         onerror="this.onerror=null; this.src='<?= asset('images/placeholder.jpg') ?>'">
                                 <?php else: ?>
                                     <div class="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
                                         <span class="text-3xl">📦</span>
@@ -286,7 +286,7 @@
             });
         }
     </script>
-    <script src="public/assets/js/cart.js"></script>
-    <script src="public/assets/js/favorites.js"></script>
+    <script src="<?= asset('js/cart.js') ?>"></script>
+    <script src="<?= asset('js/favorites.js') ?>"></script>
 </body>
 </html>

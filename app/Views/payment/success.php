@@ -82,7 +82,7 @@
                                     <img src="<?= htmlspecialchars($itemImageUrl) ?>" 
                                          alt="<?= htmlspecialchars($item['product_name']) ?>"
                                          class="w-16 h-16 object-cover rounded"
-                                         onerror="this.onerror=null; this.src='/public/assets/images/placeholder.jpg'">
+                                         onerror="this.onerror=null; this.src='<?= asset('images/placeholder.jpg') ?>'">
                                 <?php else: ?>
                                     <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
                                         <span class="text-2xl">📦</span>
@@ -130,7 +130,7 @@
     </div>
 
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
-    <script src="public/assets/js/cart.js"></script>
-    <script src="public/assets/js/favorites.js"></script>
+    <script src="<?= asset('js/cart.js') ?>"></script>
+    <script src="<?= asset('js/favorites.js') ?>"></script>
 </body>
 </html>

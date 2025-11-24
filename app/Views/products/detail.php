@@ -6,7 +6,7 @@
     $productName = $product['name'] ?? 'Produk';
     $productDesc = isset($product['description']) ? substr(strip_tags($product['description']), 0, 160) : 'Produk berkualitas dari GoRefill';
     $productPrice = $product['price'] ?? 0;
-    $productImage = $product['image'] ?? '/public/assets/images/logo.png';
+    $productImage = $product['image'] ?? asset('images/logo.png');
     $productRating = $product['rating'] ?? 5;
     
     echo SeoHelper::generateMetaTags([
@@ -444,9 +444,9 @@
         });
     }
     </script>
-    <script src="public/assets/js/cart.js"></script>
-    <script src="public/assets/js/favorites.js"></script>
-    <script src="public/assets/js/reviews.js"></script>
+    <script src="<?= asset('js/cart.js') ?>"></script>
+    <script src="<?= asset('js/favorites.js') ?>"></script>
+    <script src="<?= asset('js/reviews.js') ?>"></script>
     <script>
     // Override addToCart to include quantity from selector
     const originalAddToCart = addToCart;

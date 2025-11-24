@@ -27,7 +27,7 @@ return [
     // Application Configuration
     'app' => [
         'name' => 'GoRefill',
-        'url' => 'http://localhost/gorefill/public',
+        'url' => 'http://gorefill.test:5000/public',
         'env' => 'development', // development, production
         'debug' => true,
         'timezone' => 'Asia/Jakarta'

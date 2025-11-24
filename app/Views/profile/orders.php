@@ -180,8 +180,8 @@
     </div>
 
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
-<script src="public/assets/js/cart.js"></script>
-    <script src="public/assets/js/favorites.js"></script>
+    <script src="<?= asset('js/cart.js') ?>"></script>
+    <script src="<?= asset('js/favorites.js') ?>"></script>
     <!-- Midtrans Snap -->
     <script>
         function payNow(snapToken) {

@@ -4,7 +4,6 @@
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /gorefill/public/
 
     # Jika file atau folder tidak ditemukan, arahkan ke index.php
     RewriteCond %{REQUEST_FILENAME} !-f

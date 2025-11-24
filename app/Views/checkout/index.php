@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <link rel="icon" type="image/png" href="/public/assets/images/logo.png">
+    <link rel="icon" type="image/png" href="<?= asset('images/logo.png') ?>">
     <title><?= htmlspecialchars($title ?? 'Checkout') ?> - GoRefill</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -76,7 +76,7 @@
                                     <img src="<?= htmlspecialchars($itemImageUrl) ?>" 
                                          alt="<?= htmlspecialchars($item['name']) ?>"
                                          class="w-16 h-16 object-cover rounded"
-                                         onerror="this.onerror=null; this.src='/public/assets/images/placeholder.jpg'">
+                                         onerror="this.onerror=null; this.src='<?= asset('images/placeholder.jpg') ?>'">
                                 <?php else: ?>
                                     <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
                                         <span class="text-2xl">📦</span>
@@ -467,9 +467,9 @@
     
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
-    <script src="public/assets/js/cart.js"></script>
-    <script src="public/assets/js/maps.js"></script>
-    <script src="public/assets/js/favorites.js"></script>
+    <script src="<?= asset('js/cart.js') ?>"></script>
+    <script src="<?= asset('js/maps.js') ?>"></script>
+    <script src="<?= asset('js/favorites.js') ?>"></script>
     <script>
         // Select address
         function selectAddress(addressId) {

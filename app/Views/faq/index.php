@@ -6,7 +6,7 @@
     <title><?= htmlspecialchars($title ?? 'FAQ') ?> - GoRefill</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="/public/assets/images/logo.png">
+    <link rel="icon" type="image/png" href="<?= asset('images/logo.png') ?>">
     <style>
         .accordion-content {
             max-height: 0;

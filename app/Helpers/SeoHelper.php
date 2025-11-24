@@ -19,7 +19,7 @@ class SeoHelper
             'title' => 'GoRefill - Layanan Isi Ulang Air Galon & LPG',
             'description' => 'Pesan air galon dan tabung gas LPG dengan mudah. Pengiriman cepat, harga terjangkau, dan layanan terpercaya di seluruh Indonesia.',
             'keywords' => 'air galon, gas LPG, isi ulang air, isi ulang gas, pengiriman air galon, pengiriman gas, GoRefill',
-            'image' => '/public/assets/images/logo.png',
+            'image' => asset('images/logo.png'),
             'url' => self::getCurrentUrl(),
             'type' => 'website',
             'site_name' => 'GoRefill',
@@ -57,8 +57,8 @@ class SeoHelper
     <meta property="twitter:image" content="<?= self::getAbsoluteUrl($seo['image']) ?>">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/public/assets/images/logo.png">
-    <link rel="apple-touch-icon" href="/public/assets/images/logo.png">
+    <link rel="icon" type="image/png" href="<?= asset('images/logo.png') ?>">
+    <link rel="apple-touch-icon" href="<?= asset('images/logo.png') ?>">
     
     <!-- Additional SEO -->
     <meta name="robots" content="index, follow">
@@ -130,7 +130,7 @@ class SeoHelper
             "name" => $data['name'] ?? "GoRefill",
             "description" => $data['description'] ?? "Layanan isi ulang air galon dan LPG terpercaya",
             "url" => $data['url'] ?? self::getCurrentUrl(),
-            "logo" => self::getAbsoluteUrl("/public/assets/images/logo.png"),
+            "logo" => asset('images/logo.png'),
             "sameAs" => $data['social'] ?? []
         ];
         
