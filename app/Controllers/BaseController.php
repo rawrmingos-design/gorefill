@@ -316,4 +316,21 @@ abstract class BaseController
         
         return false;
     }
+    
+    protected function logToFile($channel, $message, array $context = [])
+    {
+        $date = date('Y-m-d H:i:s');
+        $logDir = __DIR__ . '/../../storage/logs';
+        if (!is_dir($logDir)) {
+            mkdir($logDir, 0755, true);
+        }
+        $logFile = $logDir . '/midtrans.log';
+        $line = '[' . $date . '] ' . $channel . ' - ' . $message;
+        if (!empty($context)) {
+            $line .= ' ' . json_encode($context);
+        }
+        var_dump($message);
+        $line .= PHP_EOL;
+        @file_put_contents($logFile, $line, FILE_APPEND);
+    }
 }

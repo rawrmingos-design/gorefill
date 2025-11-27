@@ -33,6 +33,10 @@ class PaymentController extends BaseController {
      */
     public function callback() {
         try {
+            $this->logToFile('midtrans.callback', 'invoked', [
+                'method' => $_SERVER['REQUEST_METHOD'] ?? '',
+                'uri' => $_SERVER['REQUEST_URI'] ?? ''
+            ]);
             // Get notification from Midtrans
             $notification = new \Midtrans\Notification();
             
@@ -50,6 +54,14 @@ class PaymentController extends BaseController {
             }
             
             $wasPaidBefore = ($order['payment_status'] === 'paid');
+            
+            $this->logToFile('midtrans.callback', 'order state', [
+                'order_number' => $orderNumber,
+                'db_payment_status' => $order['payment_status'],
+                'transaction_status' => $transactionStatus,
+                'fraud_status' => $fraudStatus
+            ]);
+
             
             // Prepare complete Midtrans data array
             $midtransData = [
@@ -111,7 +123,7 @@ class PaymentController extends BaseController {
             }
             
             // Log notification
-            error_log('Midtrans Notification: ' . json_encode($midtransData));
+            $this->logToFile('midtrans.callback', 'notification payload', $midtransData);
             
             // Determine payment status based on transaction status
             $paymentStatus = 'pending';
@@ -140,11 +152,22 @@ class PaymentController extends BaseController {
                 $paymentStatus = 'cancelled';
             }
             
+            $this->logToFile('midtrans.callback', 'paymentStatus mapping', [
+                'order_number' => $orderNumber,
+                'transaction_status' => $transactionStatus,
+                'fraud_status' => $fraudStatus,
+                'computed_payment_status' => $paymentStatus,
+                'was_paid_before' => $wasPaidBefore
+            ]);
+
             // Update order with complete Midtrans data
             $this->orderModel->updatePaymentStatus($orderNumber, $paymentStatus, $midtransData);
             
             // ✅ NEW: Reduce product stock when payment is successful
-            if ($paymentStatus === 'paid' && !$wasPaidBefore) {
+            if ($paymentStatus === 'paid') {
+                $this->logToFile('midtrans.callback', 'calling reduceProductStock', [
+                    'order_number' => $orderNumber
+                ]);
                 $this->reduceProductStock($orderNumber);
                 
                 // Send payment success email (Week 4 Day 19)
@@ -159,15 +182,21 @@ class PaymentController extends BaseController {
                 }
             }
             
-            http_response_code(200);
-            echo json_encode([
+            $responsePayload = [
                 'message' => 'Notification processed',
                 'order_number' => $orderNumber,
                 'payment_status' => $paymentStatus
-            ]);
+            ];
+            
+            $this->logToFile('midtrans.callback', 'response', $responsePayload);
+            
+            http_response_code(200);
+            echo json_encode($responsePayload);
             
         } catch (Exception $e) {
-            error_log('Payment callback error: ' . $e->getMessage());
+            $this->logToFile('midtrans.callback', 'error', [
+                'message' => $e->getMessage()
+            ]);
             http_response_code(500);
             echo json_encode(['message' => 'Internal server error', 'error' => $e->getMessage()]);
         }
@@ -331,8 +360,18 @@ class PaymentController extends BaseController {
             $order = $this->orderModel->getByOrderNumber($orderNumber);
             
             if (!$order) {
+                $this->logToFile('midtrans.stock', 'order not found for reduceProductStock', [
+                    'order_number' => $orderNumber
+                ]);
                 return;
             }
+            
+            $this->logToFile('midtrans.stock', 'loaded order for stock reduction', [
+                'order_number' => $orderNumber,
+                'order_id' => $order['id'],
+                'payment_status' => $order['payment_status'],
+                'status' => $order['status']
+            ]);
             
             // Get order items
             $stmt = $this->pdo->prepare("
@@ -342,6 +381,16 @@ class PaymentController extends BaseController {
             ");
             $stmt->execute(['order_id' => $order['id']]);
             $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (!$orderItems) {
+                $this->logToFile('midtrans.stock', 'no order_items found for order', [
+                    'order_id' => $order['id'],
+                    'order_number' => $orderNumber
+                ]);
+                return;
+            }
+            
+            $this->logToFile('midtrans.stock', 'order_items loaded', $orderItems);
             
             // Reduce stock for each product
             foreach ($orderItems as $item) {
@@ -358,14 +407,24 @@ class PaymentController extends BaseController {
                 ]);
                 
                 if ($success) {
-                    error_log("Stock reduced: Product #{$item['product_id']} by {$item['quantity']} units");
+                    $this->logToFile('midtrans.stock', 'stock reduced', [
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity']
+                    ]);
                 } else {
-                    error_log("Stock reduction failed: Product #{$item['product_id']} - insufficient stock");
+                    $this->logToFile('midtrans.stock', 'stock reduction failed', [
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'reason' => 'insufficient stock or update failed'
+                    ]);
                 }
             }
             
         } catch (Exception $e) {
-            error_log("Stock reduction error for order {$orderNumber}: " . $e->getMessage());
+            $this->logToFile('midtrans.stock', 'stock reduction error', [
+                'order_number' => $orderNumber,
+                'message' => $e->getMessage()
+            ]);
             // Don't throw - payment already successful, just log the error
         }
     }
