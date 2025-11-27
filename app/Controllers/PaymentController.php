@@ -164,23 +164,31 @@ class PaymentController extends BaseController {
             $this->orderModel->updatePaymentStatus($orderNumber, $paymentStatus, $midtransData);
             
             // ✅ NEW: Reduce product stock when payment is successful
-            if ($paymentStatus === 'paid') {
-                $this->logToFile('midtrans.callback', 'calling reduceProductStock', [
+            if ($paymentStatus === 'paid' && !$wasPaidBefore) {
+                $this->logToFile('midtrans.callback', 'calling reduceProductStock + reduceVoucherUsage', [
                     'order_number' => $orderNumber
                 ]);
+
+                // Reduce stock
                 $this->reduceProductStock($orderNumber);
-                
-                // Send payment success email (Week 4 Day 19)
+
+                // Load complete order (with voucher code)
+                $order = $this->orderModel->getOrderWithItems($orderNumber);
+
+                // Reduce voucher
+                $this->reduceVoucherUsage($order);
+
+                // Send email
                 try {
-                    $order = $this->orderModel->getOrderWithItems($orderNumber);
                     if ($order) {
                         $mailService = new MailService();
                         $mailService->sendPaymentSuccess($order);
                     }
                 } catch (Exception $e) {
-                    error_log("Failed to send payment success email: " . $e->getMessage());
+                    error_log("Failed to send payment email: " . $e->getMessage());
                 }
             }
+
             
             $responsePayload = [
                 'message' => 'Notification processed',
@@ -354,78 +362,119 @@ class PaymentController extends BaseController {
      * @param string $orderNumber
      */
     private function reduceProductStock($orderNumber)
-    {
-        try {
-            // Get order to retrieve internal ID
-            $order = $this->orderModel->getByOrderNumber($orderNumber);
-            
-            if (!$order) {
-                $this->logToFile('midtrans.stock', 'order not found for reduceProductStock', [
-                    'order_number' => $orderNumber
-                ]);
-                return;
-            }
-            
-            $this->logToFile('midtrans.stock', 'loaded order for stock reduction', [
-                'order_number' => $orderNumber,
-                'order_id' => $order['id'],
-                'payment_status' => $order['payment_status'],
-                'status' => $order['status']
-            ]);
-            
-            // Get order items
-            $stmt = $this->pdo->prepare("
-                SELECT product_id, quantity 
-                FROM order_items 
-                WHERE order_id = :order_id
-            ");
-            $stmt->execute(['order_id' => $order['id']]);
-            $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            if (!$orderItems) {
-                $this->logToFile('midtrans.stock', 'no order_items found for order', [
-                    'order_id' => $order['id'],
-                    'order_number' => $orderNumber
-                ]);
-                return;
-            }
-            
-            $this->logToFile('midtrans.stock', 'order_items loaded', $orderItems);
-            
-            // Reduce stock for each product
-            foreach ($orderItems as $item) {
-                $updateStmt = $this->pdo->prepare("
-                    UPDATE products 
-                    SET stock = stock - :quantity 
-                    WHERE id = :product_id 
-                    AND stock >= :quantity
-                ");
-                
-                $success = $updateStmt->execute([
-                    'quantity' => $item['quantity'],
-                    'product_id' => $item['product_id']
-                ]);
-                
-                if ($success) {
-                    $this->logToFile('midtrans.stock', 'stock reduced', [
-                        'product_id' => $item['product_id'],
-                        'quantity' => $item['quantity']
-                    ]);
-                } else {
-                    $this->logToFile('midtrans.stock', 'stock reduction failed', [
-                        'product_id' => $item['product_id'],
-                        'quantity' => $item['quantity'],
-                        'reason' => 'insufficient stock or update failed'
-                    ]);
-                }
-            }
-            
-        } catch (Exception $e) {
-            $this->logToFile('midtrans.stock', 'stock reduction error', [
-                'order_number' => $orderNumber,
-                'message' => $e->getMessage()
-            ]);
-            // Don't throw - payment already successful, just log the error
+{
+    try {
+        $order = $this->orderModel->getByOrderNumber($orderNumber);
+
+        if (!$order) {
+            $this->logToFile('midtrans.stock', 'order not found', ['order_number' => $orderNumber]);
+            return;
         }
+
+        // Begin transaction
+        $this->pdo->beginTransaction();
+
+        $stmt = $this->pdo->prepare("
+            SELECT product_id, quantity 
+            FROM order_items 
+            WHERE order_id = :order_id
+        ");
+        $stmt->execute(['order_id' => $order['id']]);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!$items) {
+            $this->logToFile('midtrans.stock', 'no order_items', ['order_id' => $order['id']]);
+            $this->pdo->rollBack();
+            return;
+        }
+
+        foreach ($items as $item) {
+
+            // Lock product row to avoid race condition
+            $lockStmt = $this->pdo->prepare("
+                SELECT stock FROM products 
+                WHERE id = :id 
+                FOR UPDATE
+            ");
+            $lockStmt->execute(['id' => $item['product_id']]);
+            $product = $lockStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$product) {
+                $this->logToFile('midtrans.stock', 'product not found', $item);
+                $this->pdo->rollBack();
+                return;
+            }
+
+            if ($product['stock'] < $item['quantity']) {
+                $this->logToFile('midtrans.stock', 'insufficient stock', [
+                    'product_id' => $item['product_id'],
+                    'required' => $item['quantity'],
+                    'available' => $product['stock']
+                ]);
+                $this->pdo->rollBack();
+                return;
+            }
+
+            // Update stock
+            $updateStmt = $this->pdo->prepare("
+                UPDATE products 
+                SET stock = stock - :qty 
+                WHERE id = :id
+            ");
+            $updateStmt->execute([
+                'qty' => $item['quantity'],
+                'id' => $item['product_id']
+            ]);
+
+            $this->logToFile('midtrans.stock', 'stock reduced', $item);
+        }
+
+        // Commit all updates
+        $this->pdo->commit();
+
+    } catch (Exception $e) {
+        $this->pdo->rollBack();
+        $this->logToFile('midtrans.stock', 'transaction error', ['order' => $orderNumber, 'msg' => $e->getMessage()]);
     }
+}
+
+
+private function reduceVoucherUsage($order)
+{
+    if (empty($order['voucher_code'])) {
+        return; // no voucher used
+    }
+
+    try {
+        $this->logToFile('midtrans.voucher', 'apply voucher reduction', [
+            'order_number' => $order['order_number'],
+            'voucher_code' => $order['voucher_code']
+        ]);
+
+        $stmt = $this->pdo->prepare("
+            UPDATE vouchers 
+            SET used_count = used_count + 1
+            WHERE code = :code 
+            AND used_count < usage_limit
+        ");
+
+        $stmt->execute(['code' => $order['voucher_code']]);
+
+        if ($stmt->rowCount() > 0) {
+            $this->logToFile('midtrans.voucher', 'voucher usage increased', [
+                'code' => $order['voucher_code']
+            ]);
+        } else {
+            $this->logToFile('midtrans.voucher', 'voucher NOT increased (limit reached?)', [
+                'code' => $order['voucher_code']
+            ]);
+        }
+
+    } catch (Exception $e) {
+        $this->logToFile('midtrans.voucher', 'voucher update error', [
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+
 }

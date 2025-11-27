@@ -320,7 +320,7 @@ abstract class BaseController
     protected function logToFile($channel, $message, array $context = [])
     {
         $date = date('Y-m-d H:i:s');
-        $logDir = __DIR__ . '/../../storage/logs';
+        $logDir = __DIR__ . '/../../../storage/logs';
         if (!is_dir($logDir)) {
             mkdir($logDir, 0755, true);
         }
