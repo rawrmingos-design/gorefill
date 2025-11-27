@@ -49,6 +49,8 @@ class PaymentController extends BaseController {
                 exit;
             }
             
+            $wasPaidBefore = ($order['payment_status'] === 'paid');
+            
             // Prepare complete Midtrans data array
             $midtransData = [
                 'transaction_id' => $notification->transaction_id ?? null,
@@ -142,7 +144,7 @@ class PaymentController extends BaseController {
             $this->orderModel->updatePaymentStatus($orderNumber, $paymentStatus, $midtransData);
             
             // ✅ NEW: Reduce product stock when payment is successful
-            if ($paymentStatus === 'paid') {
+            if ($paymentStatus === 'paid' && !$wasPaidBefore) {
                 $this->reduceProductStock($orderNumber);
                 
                 // Send payment success email (Week 4 Day 19)
@@ -325,13 +327,20 @@ class PaymentController extends BaseController {
     private function reduceProductStock($orderNumber)
     {
         try {
+            // Get order to retrieve internal ID
+            $order = $this->orderModel->getByOrderNumber($orderNumber);
+            
+            if (!$order) {
+                return;
+            }
+            
             // Get order items
             $stmt = $this->pdo->prepare("
                 SELECT product_id, quantity 
                 FROM order_items 
-                WHERE order_number = :order_number
+                WHERE order_id = :order_id
             ");
-            $stmt->execute(['order_number' => $orderNumber]);
+            $stmt->execute(['order_id' => $order['id']]);
             $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Reduce stock for each product
