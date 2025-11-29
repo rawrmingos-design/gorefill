@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../Models/CourierLocation.php';
 require_once __DIR__ . '/../Models/Order.php';
+require_once __DIR__ . '/../Models/User.php';
 
 /**
  * CourierController
@@ -13,11 +14,13 @@ class CourierController {
     private $pdo;
     private $courierLocationModel;
     private $orderModel;
+    private $userModel;
 
     public function __construct($pdo) {
         $this->pdo = $pdo;
         $this->courierLocationModel = new CourierLocation($pdo);
         $this->orderModel = new Order($pdo);
+        $this->userModel = new User($pdo);
     }
 
     /**
@@ -79,6 +82,131 @@ class CourierController {
         } else {
             echo json_encode(['success' => false, 'message' => 'Failed to update location']);
         }
+    }
+
+    /**
+     * Show courier profile page with forms to update profile and password
+     */
+    public function profile() {
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'kurir') {
+            $_SESSION['error'] = 'Silakan login sebagai kurir terlebih dahulu';
+            header('Location: index.php?route=auth.login');
+            exit;
+        }
+
+        $user = $this->userModel->getById($_SESSION['user_id']);
+        if (!$user) {
+            $_SESSION['error'] = 'Data kurir tidak ditemukan';
+            header('Location: index.php?route=courier.dashboard');
+            exit;
+        }
+
+        $title = 'Courier Profile';
+        require_once __DIR__ . '/../Views/courier/profile.php';
+    }
+
+    /**
+     * Handle courier profile update (name, email, phone)
+     */
+    public function updateProfile() {
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'kurir') {
+            $_SESSION['error'] = 'Silakan login sebagai kurir terlebih dahulu';
+            header('Location: index.php?route=auth.login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: index.php?route=courier.profile');
+            exit;
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+
+        if ($name === '' || $email === '') {
+            $_SESSION['error'] = 'Nama dan email wajib diisi';
+            header('Location: index.php?route=courier.profile');
+            exit;
+        }
+
+        $existingUser = $this->userModel->getByEmail($email);
+        if ($existingUser && $existingUser['id'] != $_SESSION['user_id']) {
+            $_SESSION['error'] = 'Email sudah digunakan oleh pengguna lain';
+            header('Location: index.php?route=courier.profile');
+            exit;
+        }
+
+        $updated = $this->userModel->update($_SESSION['user_id'], [
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone
+        ]);
+
+        if ($updated) {
+            $_SESSION['name'] = $name;
+            $_SESSION['email'] = $email;
+            $_SESSION['phone'] = $phone;
+            $_SESSION['success'] = 'Profil kurir berhasil diperbarui';
+        } else {
+            $_SESSION['error'] = 'Gagal memperbarui profil kurir';
+        }
+
+        header('Location: index.php?route=courier.profile');
+        exit;
+    }
+
+    /**
+     * Handle courier password change
+     */
+    public function changePassword() {
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'kurir') {
+            $_SESSION['error'] = 'Silakan login sebagai kurir terlebih dahulu';
+            header('Location: index.php?route=auth.login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: index.php?route=courier.profile');
+            exit;
+        }
+
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+
+        if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
+            $_SESSION['error'] = 'Semua field password wajib diisi';
+            header('Location: index.php?route=courier.profile');
+            exit;
+        }
+
+        if (strlen($newPassword) < 8) {
+            $_SESSION['error'] = 'Password baru minimal 8 karakter';
+            header('Location: index.php?route=courier.profile');
+            exit;
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            $_SESSION['error'] = 'Konfirmasi password tidak cocok';
+            header('Location: index.php?route=courier.profile');
+            exit;
+        }
+
+        $success = $this->userModel->changePassword(
+            $_SESSION['user_id'],
+            $currentPassword,
+            $newPassword
+        );
+
+        if (!$success) {
+            $_SESSION['error'] = 'Password saat ini salah';
+        } else {
+            $_SESSION['success'] = 'Password berhasil diubah';
+        }
+
+        header('Location: index.php?route=courier.profile');
+        exit;
     }
 
     /**

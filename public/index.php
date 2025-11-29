@@ -494,6 +494,24 @@ try {
             $courierController = new CourierController($pdo);
             $courierController->completeDelivery();
             break;
+
+        case 'courier.profile':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->profile();
+            break;
+
+        case 'courier.updateProfile':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->updateProfile();
+            break;
+
+        case 'courier.changePassword':
+            require_once __DIR__ . '/../app/Controllers/CourierController.php';
+            $courierController = new CourierController($pdo);
+            $courierController->changePassword();
+            break;
             
         // ==================== FAQ & CONTACT ROUTES ====================
         case 'faq':

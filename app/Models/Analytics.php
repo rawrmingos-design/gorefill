@@ -27,8 +27,8 @@ class Analytics
                 SELECT 
                     DATE(created_at) as date,
                     COUNT(*) as order_count,
-                    SUM(total_price) as total_sales,
-                    AVG(total_price) as avg_order_value
+                    SUM(total) as total_sales,
+                    AVG(total) as avg_order_value
                 FROM orders
                 WHERE DATE(created_at) BETWEEN :start_date AND :end_date
                 AND payment_status = 'paid'
@@ -147,11 +147,11 @@ class Analytics
         try {
             $stmt = $this->pdo->query("
                 SELECT 
-                    order_status,
+                    status AS order_status,
                     COUNT(*) as count,
-                    SUM(total_price) as total_value
+                    SUM(total) as total_value
                 FROM orders
-                GROUP BY order_status
+                GROUP BY status
                 ORDER BY count DESC
             ");
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -172,12 +172,12 @@ class Analytics
             $stmt = $this->pdo->query("
                 SELECT 
                     COUNT(*) as total_orders,
-                    SUM(total_price) as total_revenue,
-                    AVG(total_price) as avg_order_value,
-                    MAX(total_price) as highest_order,
-                    MIN(total_price) as lowest_order,
-                    SUM(CASE WHEN payment_status = 'paid' THEN total_price ELSE 0 END) as paid_revenue,
-                    SUM(CASE WHEN payment_status = 'pending' THEN total_price ELSE 0 END) as pending_revenue
+                    SUM(total) as total_revenue,
+                    AVG(total) as avg_order_value,
+                    MAX(total) as highest_order,
+                    MIN(total) as lowest_order,
+                    SUM(CASE WHEN payment_status = 'paid' THEN total ELSE 0 END) as paid_revenue,
+                    SUM(CASE WHEN payment_status = 'pending' THEN total ELSE 0 END) as pending_revenue
                 FROM orders
             ");
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -186,7 +186,7 @@ class Analytics
             $todayStmt = $this->pdo->query("
                 SELECT 
                     COUNT(*) as today_orders,
-                    COALESCE(SUM(total_price), 0) as today_revenue
+                    COALESCE(SUM(total), 0) as today_revenue
                 FROM orders
                 WHERE DATE(created_at) = CURDATE()
                 AND payment_status = 'paid'
@@ -197,7 +197,7 @@ class Analytics
             $weekStmt = $this->pdo->query("
                 SELECT 
                     COUNT(*) as week_orders,
-                    COALESCE(SUM(total_price), 0) as week_revenue
+                    COALESCE(SUM(total), 0) as week_revenue
                 FROM orders
                 WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
                 AND payment_status = 'paid'
@@ -208,7 +208,7 @@ class Analytics
             $monthStmt = $this->pdo->query("
                 SELECT 
                     COUNT(*) as month_orders,
-                    COALESCE(SUM(total_price), 0) as month_revenue
+                    COALESCE(SUM(total), 0) as month_revenue
                 FROM orders
                 WHERE YEAR(created_at) = YEAR(CURDATE())
                 AND MONTH(created_at) = MONTH(CURDATE())

@@ -441,32 +441,32 @@ class PaymentController extends BaseController {
 
 private function reduceVoucherUsage($order)
 {
-    if (empty($order['voucher_code'])) {
+    if (empty($order['voucher_id'])) {
         return; // no voucher used
     }
 
     try {
         $this->logToFile('midtrans.voucher', 'apply voucher reduction', [
             'order_number' => $order['order_number'],
-            'voucher_code' => $order['voucher_code']
+            'voucher_id'   => $order['voucher_id']
         ]);
 
         $stmt = $this->pdo->prepare("
             UPDATE vouchers 
             SET used_count = used_count + 1
-            WHERE code = :code 
+            WHERE id = :id
             AND used_count < usage_limit
         ");
 
-        $stmt->execute(['code' => $order['voucher_code']]);
+        $stmt->execute(['id' => $order['voucher_id']]);
 
         if ($stmt->rowCount() > 0) {
             $this->logToFile('midtrans.voucher', 'voucher usage increased', [
-                'code' => $order['voucher_code']
+                'voucher_id' => $order['voucher_id']
             ]);
         } else {
             $this->logToFile('midtrans.voucher', 'voucher NOT increased (limit reached?)', [
-                'code' => $order['voucher_code']
+                'voucher_id' => $order['voucher_id']
             ]);
         }
 
@@ -476,5 +476,6 @@ private function reduceVoucherUsage($order)
         ]);
     }
 }
+
 
 }

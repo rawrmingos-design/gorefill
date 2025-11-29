@@ -28,6 +28,9 @@
                         <i class="fas fa-satellite-dish mr-1"></i>
                         <span>Checking GPS...</span>
                     </div>
+                    <a href="index.php?route=courier.profile" class="bg-white text-green-700 hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-medium border border-green-600">
+                        <i class="fas fa-user mr-1"></i> Profile
+                    </a>
                     <a href="index.php?route=auth.logout" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg">
                         <i class="fas fa-sign-out-alt mr-1"></i> Logout
                     </a>
