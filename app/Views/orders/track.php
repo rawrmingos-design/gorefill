@@ -29,6 +29,7 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <?php require_once __DIR__ . '/../../Helpers/ImageHelper.php'; ?>
     <!-- Navbar -->
     <?php include __DIR__ . '/../layouts/navbar.php'; ?>
 
@@ -236,8 +237,10 @@
             <div class="space-y-3">
                 <?php foreach ($items as $item): ?>
                     <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                        <?php if ($item['product_image']): ?>
-                            <img src="<?= htmlspecialchars($item['product_image']) ?>" 
+                        <?php
+                        $imageUrl = ImageHelper::getImageUrl($item['product_image'] ?? null);
+                        if ($imageUrl): ?>
+                            <img src="<?= htmlspecialchars($imageUrl) ?>" 
                                  alt="<?= htmlspecialchars($item['product_name']) ?>"
                                  class="w-16 h-16 object-cover rounded">
                         <?php endif; ?>

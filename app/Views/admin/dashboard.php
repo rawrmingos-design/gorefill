@@ -129,7 +129,6 @@
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-chart-line text-blue-600 mr-2"></i>Sales Trend (Last 7 Days)</h3>
-                    <a href="?route=admin.reports" class="text-blue-600 text-sm hover:underline">View Reports</a>
                 </div>
                 <canvas id="salesChart" height="100"></canvas>
             </div>

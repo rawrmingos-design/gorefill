@@ -35,7 +35,9 @@
             <!-- Header -->
             <div class="flex justify-between items-start mb-8 pb-6 border-b-2">
                 <div>
-                    <h1 class="text-4xl font-bold text-blue-600 mb-2">🌊 GoRefill</h1>
+                    <h1 class="text-4xl flex flex-row gap-4 font-bold text-blue-600 mb-2">
+          <img src="<?= asset('images/logo.png') ?>" alt="GoRefill Logo" class="h-12 w-12 transition-transform group-hover:scale-110">
+                         GoRefill</h1>
                     <p class="text-gray-600">Eco-Friendly Refill Products</p>
                     <p class="text-sm text-gray-500 mt-2">
                         Jl. Contoh No. 123, Semarang<br>

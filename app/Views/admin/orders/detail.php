@@ -186,7 +186,7 @@
                                 <?= $order['status'] !== 'pending' && $order['status'] !== 'confirmed' ? 'opacity-50 cursor-not-allowed' : '' ?>"
     
                             <?php 
-                            if ($order['status'] !== 'confirmed') {
+                            if ($order['status'] === 'confirmed') {
                                 echo 'disabled';
                             } 
                             ?>
@@ -194,17 +194,17 @@
                                 <i class="fas fa-check"></i> Confirm Order
                             </button>
                             <button onclick="<?php 
-                                if ($order['status'] === 'packing') {
+                                if ($order['status'] !== 'packing') {
                                     echo "updateStatus('packing')";
                                 } else {
                                     echo "alert('Pembayaran belum dikonfirmasi!')";
                                 }
                             ?>" 
                                 class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg 
-                                <?= $order['payment_status'] !== 'pending' && $order['status'] !== 'packing' ? 'opacity-50 cursor-not-allowed' : '' ?>"
+                                <?= $order['payment_status'] !== 'pending' && $order['status'] === 'packing' ? 'opacity-50 cursor-not-allowed' : '' ?>"
     
                             <?php 
-                            if ($order['status'] !== 'packing') {
+                            if ($order['status'] === 'packing') {
                                 echo 'disabled';
                             } 
                             ?>
